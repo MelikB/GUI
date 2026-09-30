@@ -1,0 +1,1374 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dünya'nın Doğuşu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-bleed space canvas; header top-left, chapter panel on the right, timeline dock across the bottom.
+   One deliberate dark look (deep space). The accent follows the era: dust violet → magma → ocean → life. */
+:root {
+  --void: #04060c;
+  --ink: #e7eaf3;
+  --ink-2: #99a2b8;
+  --line: rgba(150, 165, 205, 0.2);
+  --panel: rgba(7, 10, 19, 0.66);
+  --era: #b9a6ff;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--ink);
+  font: 400 14px/1.55 var(--f-body);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+.app {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  column-gap: 28px;
+  row-gap: 12px;
+  padding-inline: 28px;
+  padding-block: 22px 18px;
+  pointer-events: none;
+}
+.head, .panel, .dock { pointer-events: auto; }
+
+.head { grid-column: 1; grid-row: 1; min-width: 0; }
+.eyebrow {
+  margin: 0 0 6px;
+  font: 500 11px/1.3 var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.eyebrow b { color: var(--era); font-weight: 500; transition: color .8s; }
+h1 {
+  margin: 0;
+  font: 750 clamp(30px, 5.2vw, 60px)/0.98 var(--f-display);
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.age {
+  margin: 10px 0 0;
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px;
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+.age #ageNum { font-size: clamp(20px, 2.6vw, 28px); font-weight: 500; color: var(--era); transition: color .8s; }
+.age #ageUnit { font-size: 13px; color: var(--ink-2); }
+.since { margin: 2px 0 0; font: 400 12px/1.4 var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+#stage { grid-column: 1; grid-row: 2; position: relative; min-height: 0; }
+.toast {
+  position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
+  max-width: min(460px, 100%);
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font: 500 13px/1.35 var(--f-body);
+  text-align: center;
+  animation: toastIn .45s ease-out;
+}
+.toast i { font-style: normal; font-family: var(--f-mono); color: var(--era); margin-right: 6px; }
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+.panel {
+  grid-column: 2; grid-row: 1 / span 2; align-self: start;
+  min-width: 0;
+  display: grid; gap: 14px;
+  padding: 18px 18px 16px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.chapter {
+  margin: 0;
+  display: flex; justify-content: space-between; gap: 8px;
+  font: 500 11px/1.3 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
+}
+.chapter span:last-child { color: var(--era); transition: color .8s; }
+.desc { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ink); max-width: 62ch; }
+.more {
+  display: none; justify-self: start;
+  padding: 0; border: 0; background: none; color: var(--era);
+  font: 500 12px/1.4 var(--f-body); cursor: pointer;
+}
+.readouts {
+  margin: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 10px; overflow: hidden;
+}
+.readouts > div { background: var(--void); padding: 8px 10px; min-width: 0; }
+.readouts .wide { grid-column: 1 / -1; }
+.readouts dt { font: 500 10px/1.3 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+.readouts dd { margin: 3px 0 0; font: 500 15px/1.3 var(--f-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.dock {
+  grid-column: 1 / -1; grid-row: 3;
+  display: flex; align-items: center; gap: 14px;
+}
+.btn {
+  flex: none;
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.btn:hover { border-color: var(--era); }
+.btn.primary { background: var(--era); color: var(--void); border-color: transparent; }
+.btn svg { width: 18px; height: 18px; fill: currentColor; }
+.btn:focus-visible, .timeline:focus-visible, .speed button:focus-visible, .more:focus-visible {
+  outline: 2px solid var(--era); outline-offset: 3px;
+}
+.timeline {
+  position: relative; flex: 1 1 auto; min-width: 0;
+  height: 46px;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: 8px;
+}
+.segs { position: absolute; left: 0; right: 0; top: 14px; display: flex; gap: 3px; }
+.seg { position: relative; min-width: 0; }
+.seg .bar { height: 6px; border-radius: 3px; background: rgba(150, 165, 205, 0.22); overflow: hidden; }
+.seg .fill { height: 100%; width: 0; background: var(--era); transition: background .8s; }
+.seg .lbl {
+  display: block; margin-top: 7px;
+  font: 500 10px/1.2 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.seg.on .lbl { color: var(--ink); }
+.marks { position: absolute; left: 0; right: 0; top: 4px; height: 6px; }
+.mark { position: absolute; top: 0; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--ink-2); opacity: .7; }
+.mark.past { background: var(--era); opacity: 1; }
+.playhead {
+  position: absolute; top: 8px; width: 2px; height: 18px; margin-left: -1px;
+  background: var(--ink); border-radius: 1px;
+  box-shadow: 0 0 10px var(--era);
+}
+.speed { flex: none; display: flex; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); padding: 3px; }
+.speed button {
+  border: 0; background: none; color: var(--ink-2);
+  font: 500 12px/1 var(--f-mono);
+  padding: 8px 9px; border-radius: 999px; cursor: pointer;
+}
+.speed button[aria-pressed="true"] { background: rgba(150, 165, 205, 0.18); color: var(--ink); }
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(200px, 1fr) auto auto;
+    padding-inline: 16px;
+    padding-block: 14px 12px;
+    row-gap: 10px;
+  }
+  .panel { grid-column: 1; grid-row: 3; padding: 12px 14px; gap: 10px; }
+  .dock { grid-row: 4; flex-wrap: wrap; gap: 10px; }
+  .timeline { order: -1; flex-basis: 100%; }
+  .speed { margin-left: auto; }
+  .desc { font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .desc.open { display: block; }
+  .more { display: inline; }
+  .readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .readouts .wide { grid-column: span 2; }
+  .readouts dd { font-size: 13px; }
+  .seg .lbl { visibility: hidden; }
+  .seg.on .lbl { visibility: visible; overflow: visible; }
+}
+@media (max-width: 860px) and (max-height: 700px) {
+  .since { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<div class="app">
+  <header class="head">
+    <p class="eyebrow">Dünya'nın Doğuşu · <b>4,57 milyar yıl</b></p>
+    <h1 id="era">Güneş Bulutsusu</h1>
+    <p class="age"><span id="ageNum">4,568</span><span id="ageUnit">milyar yıl önce</span></p>
+    <p class="since" id="since">Güneş Sistemi'nin yaşı: 0 yıl</p>
+  </header>
+
+  <div id="stage"><div id="toast" class="toast" hidden></div></div>
+
+  <aside class="panel" aria-live="polite">
+    <p class="chapter"><span id="chapter">Bölüm 1 / 8</span><span id="chapterSpan">4.568–4.567 My</span></p>
+    <p class="desc" id="desc"></p>
+    <button class="more" id="more" type="button" aria-expanded="false">Devamını oku</button>
+    <dl class="readouts">
+      <div><dt>Sıcaklık</dt><dd id="rTemp">—</dd></div>
+      <div><dt>Kütle</dt><dd id="rMass">—</dd></div>
+      <div><dt>Gün</dt><dd id="rDay">—</dd></div>
+      <div><dt>Ay mesafesi</dt><dd id="rMoon">—</dd></div>
+      <div class="wide"><dt>Atmosfer</dt><dd id="rAtmo">—</dd></div>
+    </dl>
+  </aside>
+
+  <footer class="dock">
+    <button class="btn primary" id="play" type="button" aria-label="Duraklat">
+      <svg viewBox="0 0 24 24" id="icoPause"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" id="icoPlay" hidden><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+    </button>
+    <button class="btn" id="restart" type="button" aria-label="Baştan başlat">
+      <svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+    </button>
+    <div class="timeline" id="timeline" role="slider" tabindex="0" aria-label="Zaman çizelgesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="marks" id="marks"></div>
+      <div class="segs" id="segs"></div>
+      <div class="playhead" id="playhead"></div>
+    </div>
+    <div class="speed" role="group" aria-label="Simülasyon hızı">
+      <button type="button" id="sp05" data-speed="0.5" aria-pressed="false">0,5×</button>
+      <button type="button" id="sp1" data-speed="1" aria-pressed="true">1×</button>
+      <button type="button" id="sp2" data-speed="2" aria-pressed="false">2×</button>
+      <button type="button" id="sp4" data-speed="4" aria-pressed="false">4×</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================================================================ utilities */
+const TAU = Math.PI * 2;
+const clamp = (x, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+const lerp = (a, b, t) => a + (b - a) * t;
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+function rng(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================================================================ story */
+// Ages in millions of years ago (My). Each scene maps its own slice of the timeline.
+const SCENES = [
+  { name: 'Güneş Bulutsusu', short: 'Bulutsu', a0: 4568.2, a1: 4567.0, dur: 14, color: '#b9a6ff',
+    text: 'Yakındaki bir süpernovanın şok dalgası dev bir gaz ve toz bulutunu sıkıştırıyor. Bulut kendi kütleçekimiyle çöküyor, küçüldükçe daha hızlı dönüyor ve yassı bir diske dönüşüyor. Merkezde toplanan madde ısınarak ön-Güneş olarak parlamaya başlıyor.' },
+  { name: 'Gezegencikler', short: 'Gezegencik', a0: 4567.0, a1: 4560.0, dur: 16, color: '#e6b98a',
+    text: 'Diskteki toz taneleri birbirine yapışıp çakıllara, çakıllar da kilometrelerce büyüklükte gezegenciklere dönüşüyor. Kar çizgisinin içinde yalnızca kaya ve metal katı kalabiliyor; su buzu daha uzakta. Çarpışan gezegencikler birleşiyor ve en büyükleri çevresini süpürmeye başlıyor.' },
+  { name: 'Ön-Dünya', short: 'Birikim', a0: 4560.0, a1: 4520.0, dur: 12, color: '#ff8f45',
+    text: 'Güneş\'ten 1 AU uzaklıktaki embriyo, yörüngesindeki gezegencikleri yutarak büyüyor. Her çarpışma yüzeyi yeniden eritiyor. Ağır demir ve nikel merkeze çökerek çekirdeği, geri kalan kaya mantoyu oluşturuyor.' },
+  { name: 'Theia Çarpışması', short: 'Theia', a0: 4520.0, a1: 4500.0, dur: 14, color: '#ff6a3d',
+    text: 'Mars büyüklüğündeki Theia genç Dünya\'ya eğik bir açıyla çarpıyor. Theia\'nın çekirdeği Dünya\'ya karışıyor; iki mantodan kopan buharlaşmış kaya gezegenin çevresinde bir enkaz halkası oluşturuyor. Halka kısa sürede toplanarak Ay\'ı meydana getiriyor.' },
+  { name: 'Magma Okyanusu', short: 'Magma', a0: 4500.0, a1: 4400.0, dur: 10, color: '#ffb347',
+    text: 'Çarpışmanın enerjisi yüzeyi yüzlerce kilometre derinliğe kadar eritiyor. Gezegen ısısını uzaya yaydıkça soğuyor ve ilk bazalt kabuk parçaları katılaşıyor. Ay şimdilik bugünkünden yaklaşık 15 kat daha yakın ve gökyüzünün büyük bir kısmını kaplıyor.' },
+  { name: 'İlk Okyanuslar', short: 'Okyanus', a0: 4400.0, a1: 3800.0, dur: 13, color: '#5cb8ea',
+    text: 'Volkanlardan çıkan su buharı ve kuyruklu yıldızlarla gelen su, soğuyan atmosferde yoğunlaşıyor. Milyonlarca yıl süren yağmurlar ilk okyanusları dolduruyor. Jack Hills zirkonları 4,4 milyar yıl önce sıvı su bulunduğunu gösteriyor. 4,1–3,8 milyar yıl önce Geç Ağır Bombardıman yüzeyi yeniden dövüyor.' },
+  { name: 'Yaşamın Yükselişi', short: 'Yaşam', a0: 3800.0, a1: 541.0, dur: 18, color: '#7fd38e',
+    text: 'Okyanuslarda ilk mikroplar ortaya çıkıyor. Siyanobakteriler fotosentezle oksijen üretiyor ve 2,4 milyar yıl önce Büyük Oksidasyon Olayı atmosferi kalıcı olarak değiştiriyor: metan pusu dağılıyor, gökyüzü maviye dönüyor. 720 milyon yıl önce gezegen neredeyse tamamen buzla kaplanıyor.' },
+  { name: 'Bugünkü Dünya', short: 'Bugün', a0: 541.0, a1: 0, dur: 14, pow: 2, color: '#8fd4ff',
+    text: 'Kambriyen patlamasıyla karmaşık hayvanlar denizleri dolduruyor; bitkiler 470 milyon yıl önce karaya çıkıyor. Kıtalar birleşip ayrılıyor, beş büyük yok oluş yaşanıyor. 66 milyon yıl önce bir asteroit dinozor çağını bitiriyor. Bugün Dünya, yaşam barındırdığını bildiğimiz tek gezegen.' },
+];
+{ let acc = 0; for (const s of SCENES) { s.t0 = acc; acc += s.dur; s.t1 = acc; } }
+const TOTAL = SCENES[SCENES.length - 1].t1;
+
+function sceneAt(T) {
+  for (let i = 0; i < SCENES.length; i++) if (T < SCENES[i].t1) return i;
+  return SCENES.length - 1;
+}
+function sceneU(T, i) { const s = SCENES[i]; return clamp((T - s.t0) / s.dur); }
+function ageAt(T) {
+  const i = sceneAt(T), s = SCENES[i], u = sceneU(T, i);
+  const w = s.pow ? 1 - Math.pow(1 - u, s.pow) : u;
+  return lerp(s.a0, s.a1, w);
+}
+function timeForAge(a) {
+  for (const s of SCENES) {
+    if (a <= s.a0 && a >= s.a1) {
+      const w = (s.a0 - a) / (s.a0 - s.a1);
+      const u = s.pow ? 1 - Math.pow(1 - w, 1 / s.pow) : w;
+      return s.t0 + u * s.dur;
+    }
+  }
+  return a > SCENES[0].a0 ? 0 : TOTAL;
+}
+const IMPACT_U = 0.38;                       // moment of the Theia impact inside scene 4
+const THEIA_AGE = lerp(4520, 4500, IMPACT_U);
+
+const EVENTS = [
+  { age: 4567.6, text: 'Ön-Güneş parlamaya başladı' },
+  { age: 4567.3, text: 'En eski katılar: kalsiyum-alüminyumca zengin kapanımlar' },
+  { age: 4565.0, text: 'Genç Güneş\'in rüzgârı kalan gazı süpürüyor' },
+  { age: 4540.0, text: 'Demir çekirdek ayrışıyor' },
+  { age: THEIA_AGE, text: 'Theia çarpışması' },
+  { age: 4505.0, text: 'Ay oluştu' },
+  { age: 4404.0, text: 'Bilinen en eski mineral: Jack Hills zirkonu' },
+  { age: 4200.0, text: 'İlk kalıcı okyanuslar' },
+  { age: 4100.0, text: 'Geç Ağır Bombardıman başladı' },
+  { age: 3500.0, text: 'Stromatolitler: yaşamın kesin ilk izleri' },
+  { age: 2400.0, text: 'Büyük Oksidasyon Olayı' },
+  { age: 1800.0, text: 'İlk çekirdekli (ökaryot) hücreler' },
+  { age: 717.0, text: 'Kartopu Dünya: buzullar ekvatora ulaştı' },
+  { age: 541.0, text: 'Kambriyen patlaması' },
+  { age: 470.0, text: 'Bitkiler karaya çıktı' },
+  { age: 252.0, text: 'Permiyen yok oluşu: türlerin %90\'ı kayboldu' },
+  { age: 66.0, text: 'Chicxulub çarpması: dinozorların sonu', impact: true },
+  { age: 0.3, text: 'Homo sapiens ortaya çıktı' },
+];
+
+/* ================================================================ keyframes (by age, My) */
+function kf(keys, a) {
+  if (a >= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    if (a >= keys[i][0]) {
+      const [a0, v0] = keys[i - 1], [a1, v1] = keys[i];
+      return v0 + (v1 - v0) * ((a0 - a) / (a0 - a1));
+    }
+  }
+  return keys[keys.length - 1][1];
+}
+function kfc(keys, a) {
+  const r = keys.map(k => [k[0], k[1][0]]), g = keys.map(k => [k[0], k[1][1]]), b = keys.map(k => [k[0], k[1][2]]);
+  return [kf(r, a), kf(g, a), kf(b, a)];
+}
+const KF = {
+  radius:  [[4560, 0.55], [4525, 0.88], [THEIA_AGE, 0.9], [4506, 1], [0, 1]],
+  magma:   [[4500, 1], [4460, 0.55], [4420, 0.2], [4330, 0.03], [4200, 0]],
+  sea:     [[4400, 0], [4250, 0.55], [4000, 0.9], [3000, 0.84], [2500, 0.76], [0, 0.71]],
+  steam:   [[4480, 0], [4430, 0.5], [4400, 0.85], [4300, 0.7], [4150, 0.22], [3900, 0.04], [0, 0]],
+  cloud:   [[4420, 0], [4300, 0.24], [3800, 0.34], [0, 0.38]],
+  haze:    [[3800, 0.05], [3400, 0.4], [2500, 0.42], [2330, 0], [0, 0]],
+  microbe: [[3900, 0], [3400, 0.5], [2400, 0.65], [1000, 0.35], [541, 0.1], [0, 0.05]],
+  mature:  [[4300, 0], [3000, 0.4], [2000, 0.75], [0, 1]],
+  veg:     [[480, 0], [440, 0.12], [380, 0.55], [300, 0.85], [0, 0.8]],
+  snowball:[[725, 0], [708, 1], [640, 1], [628, 0], [0, 0]],
+  cap:     [[3000, 1.8], [2380, 1.8], [2300, 0.95], [2150, 1.8], [800, 1.55], [0, 1.2]],
+  atmoStr: [[4560, 0.45], [4400, 0.85], [3800, 0.55], [2400, 0.55], [2300, 0.7], [0, 0.7]],
+  atmoCol: [[4560, [255, 120, 45]], [4400, [255, 160, 100]], [4300, [230, 214, 196]], [3800, [236, 170, 104]],
+            [2400, [236, 170, 104]], [2300, [120, 172, 255]], [0, [92, 158, 255]]],
+  temp:    [[4560, 1700], [4525, 2000], [THEIA_AGE, 2000], [4510, 4500], [4500, 2300], [4460, 1400], [4400, 230],
+            [4300, 180], [4100, 90], [3800, 70], [3000, 45], [2450, 25], [2350, -5], [2200, -5], [2100, 22],
+            [800, 20], [708, -45], [640, -45], [628, 45], [541, 22], [300, 18], [252, 32], [66, 23], [50, 28], [0, 15]],
+  mass:    [[4567, 0.1], [4563, 2], [4560, 10], [4540, 55], [4520, 85], [THEIA_AGE, 88], [4508, 99], [0, 100]],
+  day:     [[4506, 5], [4000, 8], [3200, 12], [2000, 19], [1000, 19], [620, 21.9], [400, 22], [0, 24]],
+  moonKm:  [[4505, 25000], [4400, 70000], [4000, 160000], [3200, 270000], [2450, 330000], [620, 370000], [0, 384400]],
+};
+function atmoText(a) {
+  if (a > 4560) return 'Hidrojen ve helyum (bulutsu gazı)';
+  if (a > THEIA_AGE) return 'Kaya buharı, hidrojen';
+  if (a > 4500) return 'Silikat buharı';
+  if (a > 4400) return 'Su buharı, CO₂';
+  if (a > 3800) return 'CO₂, N₂, su buharı';
+  if (a > 2400) return 'N₂, CO₂, metan pusu';
+  if (a > 541) return 'N₂, CO₂, O₂ %1–10';
+  return 'N₂ %78, O₂ %21, Ar %0,9';
+}
+
+/* ================================================================ noise + planet textures */
+const perm = new Uint8Array(512);
+{
+  const r = rng(1234), p = [];
+  for (let i = 0; i < 256; i++) p.push(i);
+  for (let i = 255; i > 0; i--) { const j = (r() * (i + 1)) | 0; const t = p[i]; p[i] = p[j]; p[j] = t; }
+  for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+}
+const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+function grad(h, x, y, z) {
+  const u = h < 8 ? x : y, v = h < 4 ? y : (h === 12 || h === 14 ? x : z);
+  return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+function noise(x, y, z) {
+  let X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z);
+  x -= X; y -= Y; z -= Z; X &= 255; Y &= 255; Z &= 255;
+  const u = fade(x), v = fade(y), w = fade(z);
+  const A = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
+  const B = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
+  return lerp(
+    lerp(lerp(grad(perm[AA] & 15, x, y, z), grad(perm[BA] & 15, x - 1, y, z), u),
+         lerp(grad(perm[AB] & 15, x, y - 1, z), grad(perm[BB] & 15, x - 1, y - 1, z), u), v),
+    lerp(lerp(grad(perm[AA + 1] & 15, x, y, z - 1), grad(perm[BA + 1] & 15, x - 1, y, z - 1), u),
+         lerp(grad(perm[AB + 1] & 15, x, y - 1, z - 1), grad(perm[BB + 1] & 15, x - 1, y - 1, z - 1), u), v), w);
+}
+function fbm(x, y, z, oct) {
+  let s = 0, a = 0.5, f = 1;
+  for (let i = 0; i < oct; i++) { s += a * noise(x * f, y * f, z * f); f *= 2.03; a *= 0.5; }
+  return s;
+}
+
+const TW = 512, TH = 256, CW = 512, CH = 256;
+const HT = new Float32Array(TW * TH);   // elevation, equalised to an area-uniform 0..1 rank
+const RT = new Float32Array(TW * TH);   // ridge field: 1 along magma cracks / crater rims
+const CT = new Float32Array(CW * CH);   // cloud field, equalised
+
+// Remap values so that "threshold x" covers fraction x of the sphere's surface.
+function equalise(arr, w, h) {
+  const BINS = 2048, hist = new Float64Array(BINS);
+  let mn = Infinity, mx = -Infinity;
+  for (let i = 0; i < arr.length; i++) { if (arr[i] < mn) mn = arr[i]; if (arr[i] > mx) mx = arr[i]; }
+  const sc = (BINS - 1) / (mx - mn);
+  let total = 0;
+  for (let j = 0; j < h; j++) {
+    const wt = Math.cos(Math.PI / 2 - (j + 0.5) / h * Math.PI);
+    for (let i = 0; i < w; i++) { hist[((arr[j * w + i] - mn) * sc) | 0] += wt; total += wt; }
+  }
+  const cdf = new Float32Array(BINS); let c = 0;
+  for (let b = 0; b < BINS; b++) { c += hist[b]; cdf[b] = c / total; }
+  for (let i = 0; i < arr.length; i++) arr[i] = cdf[((arr[i] - mn) * sc) | 0];
+}
+function buildTextures() {
+  for (let j = 0; j < TH; j++) {
+    const lat = Math.PI / 2 - (j + 0.5) / TH * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+    for (let i = 0; i < TW; i++) {
+      const lon = i / TW * TAU, x = cl * Math.cos(lon), y = sl, z = cl * Math.sin(lon);
+      const k = j * TW + i;
+      HT[k] = fbm(x * 1.2 + 3.1, y * 1.2, z * 1.2 - 1.7, 3) * 1.4 + fbm(x * 3.2 + 7, y * 3.2, z * 3.2, 5) * 0.5;
+      const n = noise(x * 4 + 11, y * 4, z * 4) + 0.5 * noise(x * 9, y * 9 + 5, z * 9);
+      RT[k] = Math.pow(1 - Math.min(1, Math.abs(n) * 1.7), 3);
+    }
+  }
+  equalise(HT, TW, TH);
+  for (let j = 0; j < CH; j++) {
+    const lat = Math.PI / 2 - (j + 0.5) / CH * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+    for (let i = 0; i < CW; i++) {
+      const lon = i / CW * TAU, x = cl * Math.cos(lon), y = sl, z = cl * Math.sin(lon);
+      CT[j * CW + i] = fbm(x * 2.2 + 20, y * 4.6, z * 2.2, 5) + 0.3 * noise(x * 9, y * 12, z * 9);
+    }
+  }
+  equalise(CT, CW, CH);
+}
+
+/* ================================================================ canvas + layout */
+const cv = document.getElementById('sky');
+const ctx = cv.getContext('2d');
+const stageEl = document.getElementById('stage');
+let W = 0, H = 0, dpr = 1, cx = 0, cy = 0, vw = 0, vh = 0, Rfull = 100, moonMax = 300;
+const starCv = document.createElement('canvas');
+const planetCv = document.createElement('canvas'), pctx = planetCv.getContext('2d');
+let PIMG = null, GEO = null, moonImg = null, theiaImg = null;
+
+const SUN = (() => { const v = [-0.62, -0.36, 0.7], l = Math.hypot(...v); return v.map(c => c / l); })();
+
+function buildGeo(D) {
+  const n = D * D;
+  const g = {
+    D, n: 0,
+    pix: new Int32Array(n), lon: new Float32Array(n), clon: new Float32Array(n), row: new Int16Array(n), rowf: new Float32Array(n),
+    lit: new Float32Array(n), spec: new Float32Array(n), rim: new Float32Array(n), edge: new Float32Array(n),
+    alat: new Float32Array(TH), desert: new Float32Array(TH),
+  };
+  const tilt = 23.4 * Math.PI / 180, ct = Math.cos(tilt), st = Math.sin(tilt);
+  const hx = SUN[0], hy = SUN[1], hz = SUN[2] + 1, hl = Math.hypot(hx, hy, hz);
+  const lim = 1 + 1.5 / D;
+  for (let py = 0; py < D; py++) {
+    for (let px = 0; px < D; px++) {
+      const x = (px + 0.5) / D * 2 - 1, y = (py + 0.5) / D * 2 - 1, r2 = x * x + y * y;
+      if (r2 > lim * lim) continue;
+      const r = Math.sqrt(r2), z = Math.sqrt(Math.max(0, 1 - r2));
+      const k = g.n++;
+      g.pix[k] = (py * D + px) * 4;
+      g.edge[k] = clamp((1 - r) * D * 0.5 + 0.5);
+      const dot = x * SUN[0] + y * SUN[1] + z * SUN[2];
+      g.lit[k] = clamp(dot * 1.05 + 0.02);
+      g.spec[k] = Math.pow(Math.max(0, (x * hx + y * hy + z * hz) / hl), 50);
+      g.rim[k] = Math.pow(1 - z, 2.4);
+      const bx = x * ct + y * st, by = -x * st + y * ct;
+      const lat = Math.asin(clamp(-by, -1, 1)), lon = Math.atan2(bx, z);
+      g.lon[k] = (lon / TAU + 1) * TW;
+      g.clon[k] = (lon / TAU + 1) * CW;
+      const rf = clamp((0.5 - lat / Math.PI) * TH - 0.5, 0, TH - 1.001);
+      g.rowf[k] = rf;
+      g.row[k] = Math.min(TH - 1, Math.max(0, Math.floor((0.5 - lat / Math.PI) * TH)));
+    }
+  }
+  for (let j = 0; j < TH; j++) {
+    const la = Math.abs(Math.PI / 2 - (j + 0.5) / TH * Math.PI);
+    g.alat[j] = la;
+    g.desert[j] = Math.exp(-Math.pow((la - 0.42) / 0.13, 2)) * 0.8;
+  }
+  return g;
+}
+
+// Static lit sphere, used for the Moon and Theia.
+function sphereImage(D, shade) {
+  const c = document.createElement('canvas'); c.width = c.height = D;
+  const x2 = c.getContext('2d'), im = x2.createImageData(D, D), d = im.data;
+  for (let py = 0; py < D; py++) for (let px = 0; px < D; px++) {
+    const x = (px + 0.5) / D * 2 - 1, y = (py + 0.5) / D * 2 - 1, r2 = x * x + y * y;
+    if (r2 > 1.02) continue;
+    const z = Math.sqrt(Math.max(0, 1 - r2));
+    const lat = Math.asin(clamp(-y, -1, 1)), lon = Math.atan2(x, z) + 1.3;
+    const i = Math.min(TW - 1, ((lon / TAU + 1) % 1 * TW) | 0), j = Math.min(TH - 1, ((0.5 - lat / Math.PI) * TH) | 0);
+    const L = clamp((x * SUN[0] + y * SUN[1] + z * SUN[2]) * 1.05 + 0.02);
+    const col = shade(HT[j * TW + i], RT[j * TW + i], L, z);
+    const p = (py * D + px) * 4;
+    d[p] = col[0]; d[p + 1] = col[1]; d[p + 2] = col[2];
+    d[p + 3] = clamp((1 - Math.sqrt(r2)) * D * 0.5 + 0.5) * 255;
+  }
+  x2.putImageData(im, 0, 0);
+  return c;
+}
+
+function buildStars() {
+  starCv.width = Math.round(W * dpr); starCv.height = Math.round(H * dpr);
+  const s = starCv.getContext('2d');
+  s.fillStyle = '#04060c'; s.fillRect(0, 0, starCv.width, starCv.height);
+  const r = rng(99), count = Math.round(W * H / 1400);
+  for (let i = 0; i < count; i++) {
+    const x = r() * starCv.width, y = r() * starCv.height, m = r();
+    const a = 0.25 + 0.75 * m * m;
+    const tint = r();
+    s.fillStyle = tint < 0.15 ? `rgba(255,214,170,${a})` : tint < 0.3 ? `rgba(170,196,255,${a})` : `rgba(235,238,255,${a})`;
+    const sz = (m > 0.96 ? 1.8 : m > 0.8 ? 1.2 : 0.8) * dpr;
+    s.fillRect(x, y, sz, sz);
+  }
+}
+
+function layout() {
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const r = stageEl.getBoundingClientRect();
+  vw = Math.max(120, r.width); vh = Math.max(120, r.height);
+  cx = r.left + r.width / 2; cy = r.top + r.height / 2;
+  Rfull = Math.max(40, Math.min(vw, vh) * 0.3);
+  moonMax = Math.min(vw * 0.46, Rfull * 3.5);
+  const D = Math.min(400, Math.max(64, Math.round(2 * Rfull * dpr)));
+  if (!GEO || GEO.D !== D) {
+    GEO = buildGeo(D);
+    planetCv.width = planetCv.height = D;
+    PIMG = pctx.createImageData(D, D);
+  }
+  const Dm = Math.max(24, Math.round(2 * Rfull * 0.273 * dpr));
+  moonImg = sphereImage(Dm, (h, q, L) => {
+    let g = h < 0.32 ? 88 : 150 + (h - 0.5) * 60;
+    g += q * 26;
+    const l = 0.03 + 0.97 * L;
+    return [g * l, g * l * 0.98, g * l * 0.95];
+  });
+  const Dt = Math.max(24, Math.round(2 * Rfull * 0.53 * dpr));
+  theiaImg = sphereImage(Dt, (h, q, L) => {
+    const l = 0.05 + 0.95 * L;
+    let r = (120 + h * 70) * l, g = (70 + h * 30) * l, b = (52 + h * 16) * l;
+    const lava = Math.max(0, q - 0.55) * 2.2;
+    r = lerp(r, 255, lava); g = lerp(g, 120, lava); b = lerp(b, 40, lava);
+    return [r, g, b];
+  });
+  buildStars();
+}
+
+/* ================================================================ N-body accretion (scenes 2–3) */
+const NB = { b: [], t: 0 };
+const NB_K = 0.45;                 // simulation time units per second of timeline
+const G_MUT = 3e-5, EPS2 = 4e-4;
+function nbInit() {
+  const r = rng(42), b = [];
+  for (let i = 0; i < 180; i++) {
+    const rad = 0.13 + 0.87 * Math.sqrt(r()), a = r() * TAU;
+    const v = Math.sqrt(1 / rad) * (1 + (r() - 0.5) * 0.05), vr = (r() - 0.5) * 0.08 * v;
+    const c = Math.cos(a), s = Math.sin(a);
+    b.push({ x: rad * c, y: rad * s, vx: -s * v + c * vr, vy: c * v + s * vr, m: 1, icy: rad > 0.9, earth: false, fl: -9 });
+  }
+  const a = 1.1, rad = 1 / 3, v = Math.sqrt(1 / rad);
+  b.push({ x: rad * Math.cos(a), y: rad * Math.sin(a), vx: -Math.sin(a) * v, vy: Math.cos(a) * v, m: 6, icy: false, earth: true, fl: -9 });
+  NB.b = b; NB.t = 0;
+}
+function nbCap(t) { return 1 + 5 * Math.pow(Math.min(1, t / (16 * NB_K)), 1.5); }
+function nbStep(dt) {
+  const b = NB.b, n = b.length, cap = nbCap(NB.t);
+  for (let i = 0; i < n; i++) {
+    const p = b[i], r2 = p.x * p.x + p.y * p.y, ir3 = 1 / (r2 * Math.sqrt(r2));
+    p.ax = -p.x * ir3; p.ay = -p.y * ir3;
+  }
+  for (let i = 0; i < n; i++) {
+    const p = b[i];
+    for (let j = i + 1; j < n; j++) {
+      const q = b[j], dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy + EPS2;
+      const inv = G_MUT / (d2 * Math.sqrt(d2));
+      p.ax += dx * inv * q.m; p.ay += dy * inv * q.m;
+      q.ax -= dx * inv * p.m; q.ay -= dy * inv * p.m;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const p = b[i];
+    p.vx += p.ax * dt; p.vy += p.ay * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+  }
+  for (let i = 0; i < b.length; i++) {
+    const p = b[i];
+    for (let j = i + 1; j < b.length; j++) {
+      const q = b[j];
+      const rr = cap * 0.0055 * (Math.cbrt(p.m) + Math.cbrt(q.m)) * ((p.earth || q.earth) ? 2.2 : 1);
+      const dx = q.x - p.x, dy = q.y - p.y;
+      if (dx * dx + dy * dy < rr * rr) {
+        const M = p.m + q.m;
+        p.x = (p.x * p.m + q.x * q.m) / M; p.y = (p.y * p.m + q.y * q.m) / M;
+        p.vx = (p.vx * p.m + q.vx * q.m) / M; p.vy = (p.vy * p.m + q.vy * q.m) / M;
+        p.icy = p.m > q.m ? p.icy : q.icy;
+        p.m = M; p.earth = p.earth || q.earth; p.fl = NB.t;
+        b.splice(j, 1); j--;
+      }
+    }
+  }
+  for (let i = b.length - 1; i >= 0; i--) {
+    const p = b[i], r2 = p.x * p.x + p.y * p.y;
+    if ((r2 < 0.0025 || r2 > 9) && !p.earth) b.splice(i, 1);
+  }
+  NB.t += dt;
+}
+function nbSync(T) {
+  const target = Math.max(0, (T - SCENES[1].t0) * NB_K);
+  if (target + 1e-9 < NB.t || !NB.b.length) nbInit();
+  const gap = target - NB.t;
+  const dt = gap > 0.25 ? 0.005 : 0.0025;       // coarser steps when jumping along the timeline
+  let steps = 0;
+  while (NB.t < target && steps < 4000) { nbStep(dt); steps++; }
+}
+const nbEarth = () => NB.b.find(p => p.earth);
+
+/* ================================================================ nebula dust */
+const DUST = [];
+{
+  const r = rng(7);
+  for (let i = 0; i < 2400; i++) {
+    const rd = 0.07 + 1.05 * Math.pow(r(), 0.8);
+    const R0 = 0.35 + r() * 1.05, ph = (r() - 0.5) * Math.PI * 0.95;
+    DUST.push({
+      rd, th: r() * TAU,
+      rc: R0 * Math.cos(ph) * 1.25, yc: R0 * Math.sin(ph),
+      h: (r() - 0.5) * 0.05 * rd,
+      w: NB_K * Math.pow(Math.max(0.1, rd), -1.5),
+      icy: rd > 0.9,
+    });
+  }
+}
+const PITCH = 0.44, SP = Math.sin(PITCH), CP = Math.cos(PITCH);
+
+function drawDiskView(T, alpha) {
+  const i = sceneAt(T), u = sceneU(T, i);
+  const f = i === 0 ? sstep(0.04, 0.85, u) : 1;
+  const zoom = i === 2 ? sstep(0.0, 0.3, u) : 0;
+  const base = Math.min(vw, vh) * 0.47;
+  let S = base, Fx = 0, Fz = 0;
+  const e = i >= 1 ? nbEarth() : null;
+  if (zoom > 0 && e) {
+    const mult = Math.exp(zoom * Math.log(26));
+    S = base * mult;
+    Fx = e.x * (1 - (1 - zoom) / mult); Fz = e.y * (1 - (1 - zoom) / mult);
+  }
+  const px = (X, Y, Z) => cx + (X - Fx) * S;
+  const py = (X, Y, Z) => cy + (-Y * CP - (Z - Fz) * SP) * S;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // supernova shock front sweeping through at the very start
+  if (i === 0 && u < 0.3) {
+    const k = u / 0.3, rad = base * lerp(0.6, 4.2, k);
+    const ox = cx - base * 2.6, oy = cy - base * 1.3;
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = `rgba(150,170,255,${0.12 * (1 - k)})`;
+    ctx.beginPath(); ctx.arc(ox, oy, rad, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = `rgba(210,220,255,${0.55 * (1 - k)})`;
+    ctx.beginPath(); ctx.arc(ox, oy, rad, 0, TAU); ctx.stroke();
+  }
+
+  // gas: a soft cloud that flattens into a disk, then is blown away by the young Sun
+  const gasA = (i === 0 ? lerp(0.5, 0.75, f) : lerp(0.75, 0.08, sstep(0.1, 0.8, u))) * (1 - zoom);
+  if (gasA > 0.01) {
+    const sx = px(0, 0, 0), sy = py(0, 0, 0);
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.scale(1, lerp(0.85, SP, f));
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, S * lerp(1.5, 1.15, f));
+    gr.addColorStop(0, `rgba(255,190,140,${0.5 * gasA})`);
+    gr.addColorStop(0.25, `rgba(200,120,150,${0.28 * gasA})`);
+    gr.addColorStop(0.6, `rgba(110,90,190,${0.16 * gasA})`);
+    gr.addColorStop(1, 'rgba(60,50,140,0)');
+    ctx.fillStyle = gr;
+    ctx.beginPath(); ctx.arc(0, 0, S * 1.5, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+
+  // dust
+  const dustA = i === 0 ? 1 : i === 1 ? 1 - sstep(0.05, 0.5, u) : 0;
+  if (dustA > 0.01) {
+    ctx.globalCompositeOperation = 'lighter';
+    const tt = T;
+    const warm = `rgb(${Math.round(lerp(170, 255, f))},${Math.round(lerp(150, 186, f))},${Math.round(lerp(255, 132, f))})`;
+    const cold = `rgb(${Math.round(lerp(170, 170, f))},${Math.round(lerp(150, 200, f))},255)`;
+    const spinF = 0.15 + 0.85 * f;
+    for (let pass = 0; pass < 2; pass++) {
+      ctx.fillStyle = pass ? cold : warm;
+      ctx.globalAlpha = alpha * dustA * (pass ? 0.55 : 0.7);
+      for (let k = 0; k < DUST.length; k++) {
+        const d = DUST[k];
+        if (d.icy !== !!pass) continue;
+        const rr = lerp(d.rc, d.rd, f), yy = lerp(d.yc, d.h, f);
+        const th = d.th + d.w * tt * spinF;
+        const X = Math.cos(th) * rr, Z = Math.sin(th) * rr;
+        const s = 1.4;
+        ctx.fillRect(px(X, yy, Z) - s / 2, py(X, yy, Z) - s / 2, s, s);
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = alpha;
+  }
+
+  // the protosun
+  {
+    const ign = i === 0 ? sstep(0.45, 0.7, u) : 1;
+    const sx = px(0, 0, 0), sy = py(0, 0, 0);
+    const rad = S * lerp(0.03, 0.045, ign) * (1 + 0.2 * f);
+    const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, rad * lerp(4, 9, ign));
+    const c1 = ign < 0.5 ? `rgba(255,${Math.round(lerp(90, 170, ign * 2))},60,` : `rgba(255,${Math.round(lerp(170, 236, ign * 2 - 1))},${Math.round(lerp(60, 190, ign * 2 - 1))},`;
+    glow.addColorStop(0, c1 + (0.25 + 0.75 * ign) + ')');
+    glow.addColorStop(0.22, c1 + (0.2 + 0.4 * ign) + ')');
+    glow.addColorStop(1, c1 + '0)');
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(sx, sy, rad * 9, 0, TAU); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = ign > 0.5 ? '#fff6e0' : '#ffb070';
+    ctx.globalAlpha = alpha * (0.4 + 0.6 * ign);
+    ctx.beginPath(); ctx.arc(sx, sy, rad, 0, TAU); ctx.fill();
+    ctx.globalAlpha = alpha;
+    // ignition flash
+    if (i === 0 && u > 0.5 && u < 0.72) {
+      const k = (u - 0.5) / 0.22, fl = Math.sin(k * Math.PI);
+      ctx.globalCompositeOperation = 'lighter';
+      const g2 = ctx.createRadialGradient(sx, sy, 0, sx, sy, S * 0.9);
+      g2.addColorStop(0, `rgba(255,236,200,${0.5 * fl})`);
+      g2.addColorStop(1, 'rgba(255,200,150,0)');
+      ctx.fillStyle = g2;
+      ctx.beginPath(); ctx.arc(sx, sy, S * 0.9, 0, TAU); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  // frost line and scale bar
+  const guideA = (i === 0 ? sstep(0.7, 1, u) : 1) * (1 - sstep(0, 0.12, zoom));
+  if (guideA > 0.01) {
+    ctx.save();
+    ctx.globalAlpha = alpha * guideA * 0.8;
+    ctx.setLineDash([4, 6]);
+    ctx.strokeStyle = 'rgba(160,200,255,0.8)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(px(0, 0, 0), py(0, 0, 0), 0.9 * S, 0.9 * S * SP, 0, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(190,214,255,0.95)';
+    ctx.font = '500 11px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('KAR ÇİZGİSİ · 2,7 AU', px(0, 0, 0), py(0, 0, 0) + 0.9 * S * SP + 16);
+    // scale bar: disk radius 1 = 3 AU
+    const bx = cx - vw / 2 + 6, by = cy + vh / 2 - 10, bl = S / 3;
+    ctx.strokeStyle = 'rgba(220,226,240,0.8)';
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bl, by);
+    ctx.moveTo(bx, by - 4); ctx.lineTo(bx, by + 4); ctx.moveTo(bx + bl, by - 4); ctx.lineTo(bx + bl, by + 4); ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(220,226,240,0.85)';
+    ctx.fillText('1 AU', bx, by - 8);
+    ctx.restore();
+  }
+
+  // planetesimals
+  if (i >= 1) {
+    const bA = i === 1 ? sstep(0.02, 0.3, u) : 1;
+    ctx.globalAlpha = alpha * bA;
+    const grow = 1 + zoom * 7;
+    for (const p of NB.b) {
+      const x = px(p.x, 0, p.y), y = py(p.x, 0, p.y);
+      const rad = (0.9 + 1.2 * Math.cbrt(p.m)) * grow;
+      if (x < -50 || x > W + 50 || y < -50 || y > H + 50) continue;
+      if (NB.t - p.fl < 0.12) {
+        ctx.fillStyle = 'rgba(255,200,120,0.5)';
+        ctx.beginPath(); ctx.arc(x, y, rad * 3, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = p.earth ? '#ffb27a' : p.icy ? '#bcd3ff' : '#c9a383';
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill();
+    }
+    if (e && zoom < 0.5) {
+      const x = px(e.x, 0, e.y), y = py(e.x, 0, e.y);
+      const la = (1 - zoom * 2) * bA;
+      ctx.globalAlpha = alpha * la;
+      ctx.strokeStyle = 'rgba(255,178,122,0.9)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(x, y, 9 + Math.cbrt(e.m) * 1.5, 0, TAU); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,214,186,0.95)';
+      ctx.font = '500 11px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('ÖN-DÜNYA', x + 14 + Math.cbrt(e.m) * 1.5, y + 4);
+    }
+  }
+  ctx.restore();
+}
+
+/* ================================================================ planet renderer */
+function renderPlanet(P) {
+  const g = GEO, d = PIMG.data, n = g.n;
+  const spinI = (P.spin / TAU) * TW, cspinI = (P.cspin / TAU) * CW;
+  const sea = P.sea, landDen = 1 / Math.max(0.03, 1 - sea), seaDen = 1 / Math.max(0.03, sea);
+  const mg = P.magma, th = 1 - mg, glow = P.glow, flick = P.flick;
+  const veg = P.veg, mature = P.mature, mic = P.microbe, snow = P.snowball, cap = P.cap;
+  const cov = Math.max(P.cloud, P.steam), steam = P.steam, haze = P.haze, lights = P.lights;
+  const cr = lerp(242, 214, steam), cg = lerp(244, 190, steam), cb = lerp(248, 160, steam);
+  const ar = P.ac[0], ag = P.ac[1], ab = P.ac[2], as = P.atmoStr;
+  const rb = lerp(58, 130, mature), gb = lerp(51, 110, mature), bb = lerp(48, 86, mature);
+  for (let k = 0; k < n; k++) {
+    let u = g.lon[k] - spinI; u -= Math.floor(u / TW) * TW;
+    const row = g.row[k], ti = row * TW + (u | 0);
+    // bilinear elevation keeps coastlines smooth at large sizes
+    const rf = g.rowf[k], r0 = rf | 0, fy = rf - r0, u0 = u | 0, fx = u - u0, u1 = u0 + 1 === TW ? 0 : u0 + 1;
+    const o0 = r0 * TW, o1 = o0 + TW;
+    const h = (HT[o0 + u0] * (1 - fx) + HT[o0 + u1] * fx) * (1 - fy) + (HT[o1 + u0] * (1 - fx) + HT[o1 + u1] * fx) * fy;
+    const q = RT[ti], L = g.lit[k];
+    let r, gg, b, wet = false;
+    if (h < sea) {
+      wet = true;
+      const t = Math.min(1, (sea - h) * seaDen * 1.8);
+      r = lerp(36, 6, t); gg = lerp(122, 32, t); b = lerp(150, 80, t);
+      if (mic > 0) { const m = mic * 0.4; r = lerp(r, 34, m); gg = lerp(gg, 116, m); b = lerp(b, 88, m); }
+    } else {
+      const e = (h - sea) * landDen;
+      r = rb + e * 32; gg = gb + e * 26; b = bb + e * 22;
+      if (veg > 0) {
+        const v = veg * Math.max(0, 1 - e * 1.7) * (1 - g.desert[row]);
+        r = lerp(r, 48, v); gg = lerp(gg, 98, v); b = lerp(b, 44, v);
+      }
+      if (e > 0.86 && mature > 0.3) { const s = Math.min(1, (e - 0.86) * 7); r = lerp(r, 236, s); gg = lerp(gg, 240, s); b = lerp(b, 246, s); }
+    }
+    let ice = g.alat[row] + (h - 0.5) * 0.25 - cap;
+    ice = ice > 0 ? Math.min(1, ice * 12) : 0;
+    if (snow > 0) { const si = clamp(snow * 1.3 - (1 - q) * 0.2); if (si > ice) ice = si; }
+    if (ice > 0) { r = lerp(r, 226, ice); gg = lerp(gg, 235, ice); b = lerp(b, 244, ice); }
+    const lf = 0.03 + 0.97 * L;
+    r *= lf; gg *= lf; b *= lf;
+    if (wet && ice < 0.5) { const sp = g.spec[k] * (1 - ice * 2) * 0.8; r += sp * 255; gg += sp * 240; b += sp * 215; }
+    if (mg > 0) {
+      let la = mg >= 0.999 ? 1 : (q - th + 0.08) * 6;
+      if (la > 0) {
+        if (la > 1) la = 1;
+        const heat = (mg >= 0.999 ? 0.5 + 0.5 * q : q) * glow;
+        const inten = Math.min(1.25, 0.55 + 0.6 * heat) * (0.92 + 0.08 * flick);
+        r = lerp(r, 255 * inten, la);
+        gg = lerp(gg, Math.min(255, 40 + 190 * heat * heat) * inten, la);
+        b = lerp(b, Math.min(255, 12 + 120 * heat * heat * heat) * inten, la);
+      }
+    }
+    if (lights > 0 && !wet && ice < 0.3 && L < 0.14) {
+      const c = (h * 7919) % 1;
+      if (c > 0.85 && (h - sea) * landDen < 0.4) {
+        const a = lights * (0.14 - L) * 7 * (c - 0.85) * 6.6;
+        r += 255 * a; gg += 196 * a; b += 120 * a;
+      }
+    }
+    if (cov > 0) {
+      let cu = g.clon[k] - cspinI; cu -= Math.floor(cu / CW) * CW;
+      const c0 = cu | 0, cx1 = c0 + 1 === CW ? 0 : c0 + 1, cf = cu - c0;
+      const q0 = r0 * CW, q1 = q0 + CW;
+      const c = (CT[q0 + c0] * (1 - cf) + CT[q0 + cx1] * cf) * (1 - fy) + (CT[q1 + c0] * (1 - cf) + CT[q1 + cx1] * cf) * fy;
+      let ca = (c - (1 - cov)) * 3.2;
+      if (ca > 0) {
+        if (ca > 1) ca = 1;
+        ca *= 0.85;
+        const cl = 0.04 + 0.96 * L;
+        r = lerp(r, cr * cl, ca); gg = lerp(gg, cg * cl, ca); b = lerp(b, cb * cl, ca);
+      }
+    }
+    if (haze > 0) {
+      const hl = haze * (0.3 + 0.7 * L) * 0.55, hk = 0.08 + 0.92 * L;
+      r = lerp(r, 210 * hk, hl); gg = lerp(gg, 142 * hk, hl); b = lerp(b, 72 * hk, hl);
+    }
+    const rim = g.rim[k] * as;
+    if (rim > 0) { const k2 = 0.12 + 0.88 * L; r += (ar * k2 - r) * rim; gg += (ag * k2 - gg) * rim; b += (ab * k2 - b) * rim; }
+    const pi = g.pix[k];
+    d[pi] = r; d[pi + 1] = gg; d[pi + 2] = b; d[pi + 3] = g.edge[k] * 255;
+  }
+  pctx.putImageData(PIMG, 0, 0);
+}
+
+/* ================================================================ planet scene */
+let clock = 0, spin = 0, cspin = 0, moonAng = 2.2;
+const impacts = [];
+const DEBRIS = [];
+{
+  const r = rng(5);
+  for (let i = 0; i < 650; i++) DEBRIS.push({ a0: r() * TAU, dn: 1.25 + Math.pow(r(), 0.7) * 1.9, yj: (r() - 0.5) * 0.12, jx: (r() - 0.5), jy: (r() - 0.5), s: 0.8 + r() * 1.4, hot: r() });
+}
+
+function planetParams(age, T) {
+  const P = {};
+  for (const k of ['radius', 'magma', 'sea', 'steam', 'cloud', 'haze', 'microbe', 'mature', 'veg', 'snowball', 'cap', 'atmoStr']) P[k] = kf(KF[k], age);
+  P.ac = kfc(KF.atmoCol, age);
+  P.glow = 1;
+  P.lights = sstep(TOTAL - 1.4, TOTAL, T);
+  P.flick = Math.sin(clock * 7.1) * 0.5 + Math.sin(clock * 12.7) * 0.5;
+  return P;
+}
+
+function spawnImpact(big) {
+  const a = Math.random() * TAU, rr = Math.sqrt(Math.random()) * 0.8;
+  impacts.push({ t: 0, x: Math.cos(a) * rr, y: Math.sin(a) * rr, dir: -2.3 + (Math.random() - 0.5) * 1.3, big: big ? 2.6 : 0.5 + Math.random() * 0.7 });
+}
+function impactRate(age, i, u) {
+  if (i === 2) return 5;
+  if (i === 3) return u < IMPACT_U ? 1.5 : 0.3;
+  if (i === 4) return lerp(1.2, 0.3, u);
+  if (age <= 4100 && age >= 3800) return 2.4;
+  if (i === 5) return 0.35;
+  return 0.04;
+}
+
+function moonScreen(dNorm, R) {
+  const dist = lerp(R * 1.75, moonMax, Math.pow(dNorm, 0.8));
+  const x = Math.cos(moonAng) * dist, y = Math.sin(moonAng) * dist * 0.2, tl = -0.12;
+  return { x: cx + x * Math.cos(tl) - y * Math.sin(tl), y: cy + x * Math.sin(tl) + y * Math.cos(tl), z: Math.sin(moonAng), dist };
+}
+function orbitPoint(a, dist, yoff) {
+  const x = Math.cos(a) * dist, y = Math.sin(a) * dist * 0.2 + yoff, tl = -0.12;
+  return [cx + x * Math.cos(tl) - y * Math.sin(tl), cy + x * Math.sin(tl) + y * Math.cos(tl), Math.sin(a)];
+}
+
+function drawPlanetScene(T, age, alpha, dt) {
+  const i = sceneAt(T), u = sceneU(T, i);
+  const P = planetParams(age, T);
+  const R = Rfull * P.radius;
+
+  // Theia timeline (scene 4)
+  const theiaScene = i === 3;
+  const tImp = theiaScene ? (u - IMPACT_U) * SCENES[3].dur : (i > 3 ? 99 : -99);
+  if (tImp >= 0 && tImp < 20) P.glow = 1 + 1.3 * Math.exp(-tImp * 0.6);
+  let shx = 0, shy = 0;
+  if (tImp >= 0 && tImp < 3 && !reduceMotion) {
+    const amp = R * 0.05 * Math.exp(-tImp * 2.5);
+    shx = (Math.random() - 0.5) * amp; shy = (Math.random() - 0.5) * amp;
+  }
+  const ocx = cx, ocy = cy;
+  cx += shx; cy += shy;
+
+  const hasMoon = age < THEIA_AGE;
+  const moonKm = kf(KF.moonKm, age);
+  const dNorm = clamp((moonKm - 25000) / (384400 - 25000));
+  const moonForm = theiaScene ? sstep(0.72, 0.93, u) : (hasMoon ? 1 : 0);
+  const M = moonScreen(dNorm, Rfull);
+  const Rm = Rfull * 0.273;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // atmosphere / heat halo
+  {
+    const ac = P.ac, st = P.atmoStr;
+    const g1 = ctx.createRadialGradient(cx, cy, R * 0.96, cx, cy, R * (1.16 + 0.12 * P.steam));
+    g1.addColorStop(0, `rgba(${ac[0] | 0},${ac[1] | 0},${ac[2] | 0},${0.5 * st})`);
+    g1.addColorStop(1, `rgba(${ac[0] | 0},${ac[1] | 0},${ac[2] | 0},0)`);
+    ctx.fillStyle = g1;
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.3, 0, TAU); ctx.fill();
+    if (P.magma > 0.02) {
+      const hg = P.magma * Math.min(1.6, P.glow);
+      const g2 = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 1.8);
+      g2.addColorStop(0, `rgba(255,110,40,${0.32 * hg})`);
+      g2.addColorStop(1, 'rgba(255,80,20,0)');
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g2;
+      ctx.beginPath(); ctx.arc(cx, cy, R * 1.8, 0, TAU); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  // debris ring (Theia scene) – behind the planet
+  const debrisOn = theiaScene && u > IMPACT_U;
+  const contact = [cx - R * 0.72, cy - R * 0.62];
+  const debrisPts = [];
+  if (debrisOn) {
+    const spread = sstep(IMPACT_U, 0.56, u), gather = sstep(0.64, 0.95, u), fadeD = 1 - sstep(0.88, 0.99, u);
+    for (const p of DEBRIS) {
+      const dist = p.dn * Rfull, w = 0.25 * Math.pow(moonMax / dist, 1.5);
+      const [ox, oy, oz] = orbitPoint(p.a0 + w * clock, dist, p.yj * Rfull);
+      let x = lerp(contact[0], ox, spread), y = lerp(contact[1], oy, spread);
+      const tx = M.x + p.jx * Rm * 1.6, ty = M.y + p.jy * Rm * 1.6;
+      x = lerp(x, tx, gather); y = lerp(y, ty, gather);
+      const z = lerp(oz, M.z, gather);
+      debrisPts.push([x, y, z, p]);
+    }
+    ctx.globalAlpha = alpha * fadeD;
+    drawDebris(debrisPts, false, u);
+    ctx.globalAlpha = alpha;
+  }
+
+  const drawMoon = () => {
+    if (moonForm <= 0) return;
+    const sc = lerp(0.55, 1, moonForm);
+    ctx.globalAlpha = alpha * moonForm;
+    const s = Rm * sc;
+    ctx.drawImage(moonImg, M.x - s, M.y - s, s * 2, s * 2);
+    ctx.globalAlpha = alpha;
+  };
+  if (M.z < 0) drawMoon();
+
+  // the planet
+  P.spin = spin; P.cspin = cspin;
+  renderPlanet(P);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(planetCv, cx - R, cy - R, R * 2, R * 2);
+
+  if (debrisOn) { ctx.globalAlpha = alpha * (1 - sstep(0.88, 0.99, u)); drawDebris(debrisPts, true, u); ctx.globalAlpha = alpha; }
+  if (M.z >= 0) drawMoon();
+
+  // Theia
+  if (theiaScene && u < 0.47) {
+    const e = Math.pow(clamp(u / IMPACT_U), 2.2);
+    const rT = Rfull * 0.53 * lerp(0.3, 1, e);
+    const sx = cx - vw * 0.62, sy = cy - vh * 0.55;
+    const ex = contact[0] - rT * 0.55, ey = contact[1] - rT * 0.45;
+    let tx = lerp(sx, ex, e), ty = lerp(sy, ey, e), rr = rT;
+    let a = 1;
+    if (u > IMPACT_U) { const k = sstep(IMPACT_U, 0.47, u); rr = rT * (1 - 0.6 * k); tx = lerp(ex, contact[0], k); ty = lerp(ey, contact[1], k); a = 1 - k; }
+    ctx.globalAlpha = alpha * a;
+    ctx.drawImage(theiaImg, tx - rr, ty - rr, rr * 2, rr * 2);
+    if (u > IMPACT_U * 0.7) {
+      const hg = sstep(IMPACT_U * 0.7, IMPACT_U, u);
+      const gl = ctx.createRadialGradient(tx, ty, rr * 0.8, tx, ty, rr * 1.6);
+      gl.addColorStop(0, `rgba(255,140,60,${0.35 * hg})`); gl.addColorStop(1, 'rgba(255,100,40,0)');
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(tx, ty, rr * 1.6, 0, TAU); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.globalAlpha = alpha;
+  }
+  // impact flash
+  if (tImp >= 0 && tImp < 4) {
+    const k = Math.exp(-tImp * 1.6);
+    ctx.globalCompositeOperation = 'lighter';
+    const fr = R * (0.4 + tImp * 1.2);
+    const gf = ctx.createRadialGradient(contact[0], contact[1], 0, contact[0], contact[1], fr);
+    gf.addColorStop(0, `rgba(255,250,230,${0.95 * k})`);
+    gf.addColorStop(0.35, `rgba(255,180,90,${0.6 * k})`);
+    gf.addColorStop(1, 'rgba(255,100,40,0)');
+    ctx.fillStyle = gf; ctx.beginPath(); ctx.arc(contact[0], contact[1], fr, 0, TAU); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    if (tImp < 1 && !reduceMotion) {
+      ctx.fillStyle = `rgba(255,244,225,${0.55 * Math.exp(-tImp * 5)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+
+  // impacts
+  for (let k = impacts.length - 1; k >= 0; k--) {
+    const m = impacts[k];
+    m.t += dt;
+    const tx = cx + m.x * R, ty = cy + m.y * R;
+    const STREAK = 0.35;
+    if (m.t < STREAK) {
+      const e = m.t / STREAK, len = R * 2.2 * (1 - e);
+      const hx = tx - Math.cos(m.dir) * len, hy = ty - Math.sin(m.dir) * len;
+      const tail = R * 0.35 * m.big;
+      const gx = hx - Math.cos(m.dir) * tail, gy = hy - Math.sin(m.dir) * tail;
+      const lg = ctx.createLinearGradient(gx, gy, hx, hy);
+      lg.addColorStop(0, 'rgba(255,200,140,0)'); lg.addColorStop(1, 'rgba(255,236,200,0.95)');
+      ctx.strokeStyle = lg; ctx.lineWidth = 1.2 + m.big; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(hx, hy); ctx.stroke();
+    } else {
+      const ft = (m.t - STREAK) / (0.9 + 0.5 * m.big);
+      if (ft >= 1) { impacts.splice(k, 1); continue; }
+      const rad = R * 0.1 * m.big * Math.sqrt(ft) + 2;
+      const gi = ctx.createRadialGradient(tx, ty, 0, tx, ty, rad);
+      gi.addColorStop(0, `rgba(255,246,220,${1 - ft})`);
+      gi.addColorStop(0.4, `rgba(255,150,60,${0.8 * (1 - ft)})`);
+      gi.addColorStop(1, 'rgba(255,90,30,0)');
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = gi; ctx.beginPath(); ctx.arc(tx, ty, rad, 0, TAU); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  // label while the embryo is still a naked proto-planet
+  if (i === 2) {
+    ctx.globalAlpha = alpha * sstep(0.35, 0.5, u);
+    ctx.fillStyle = 'rgba(255,214,186,0.9)';
+    ctx.font = '500 11px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ÇEKİRDEK AYRIŞIYOR · YÜZEY ERİMİŞ', cx, cy + R * 1.35 + 14);
+  }
+  ctx.restore();
+  cx = ocx; cy = ocy;
+}
+
+function drawDebris(pts, front, u) {
+  const cool = sstep(0.5, 0.9, u);
+  ctx.globalCompositeOperation = 'lighter';
+  for (const [x, y, z, p] of pts) {
+    if ((z >= 0) !== front) continue;
+    const hot = clamp(p.hot * 0.6 + 0.4 - cool * 0.8);
+    ctx.fillStyle = `rgb(${Math.round(lerp(150, 255, hot))},${Math.round(lerp(140, 150, hot))},${Math.round(lerp(135, 70, hot))})`;
+    ctx.fillRect(x - p.s / 2, y - p.s / 2, p.s, p.s);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ================================================================ UI */
+const $ = id => document.getElementById(id);
+const ui = {
+  era: $('era'), ageNum: $('ageNum'), ageUnit: $('ageUnit'), since: $('since'),
+  chapter: $('chapter'), chapterSpan: $('chapterSpan'), desc: $('desc'), more: $('more'),
+  rTemp: $('rTemp'), rMass: $('rMass'), rDay: $('rDay'), rMoon: $('rMoon'), rAtmo: $('rAtmo'),
+  play: $('play'), icoPlay: $('icoPlay'), icoPause: $('icoPause'), restart: $('restart'),
+  timeline: $('timeline'), segs: $('segs'), marks: $('marks'), playhead: $('playhead'), toast: $('toast'),
+};
+const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nf3 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+function fmtAge(a) {
+  if (a < 0.0005) return ['Bugün', ''];
+  if (a < 1) return [nf0.format(a * 1000), 'bin yıl önce'];
+  if (a < 1000) return [nf0.format(a), 'milyon yıl önce'];
+  return [nf3.format(a / 1000), 'milyar yıl önce'];
+}
+function fmtSpan(ma) {
+  if (ma < 0.001) return nf0.format(ma * 1e6) + ' yıl';
+  if (ma < 1) return nf0.format(ma * 1000) + ' bin yıl';
+  if (ma < 10) return nf1.format(ma) + ' milyon yıl';
+  if (ma < 1000) return nf0.format(ma) + ' milyon yıl';
+  return nf2.format(ma / 1000) + ' milyar yıl';
+}
+function fmtMy(a) { return a >= 1000 ? nf0.format(a) : nf0.format(a); }
+
+SCENES.forEach((s, k) => {
+  const seg = document.createElement('div');
+  seg.className = 'seg';
+  seg.style.flex = s.dur + ' 1 0';
+  seg.innerHTML = `<div class="bar"><div class="fill"></div></div><span class="lbl">${s.short}</span>`;
+  ui.segs.appendChild(seg);
+  s.el = seg; s.fill = seg.querySelector('.fill');
+});
+// event dots sit on the same (non-linear) axis as the segments
+function placeMarks() {
+  ui.marks.innerHTML = '';
+  const gapsPx = 3 * (SCENES.length - 1), wpx = ui.timeline.clientWidth;
+  for (const ev of EVENTS) {
+    const t = timeForAge(ev.age), i = sceneAt(t);
+    const x = (t / TOTAL) * (wpx - gapsPx) + i * 3;
+    const m = document.createElement('div');
+    m.className = 'mark';
+    m.style.left = x + 'px';
+    m.title = ev.text;
+    ev.el = m; ev.t = t;
+    ui.marks.appendChild(m);
+  }
+}
+function timeToPx(T) {
+  const gapsPx = 3 * (SCENES.length - 1), wpx = ui.timeline.clientWidth;
+  return (T / TOTAL) * (wpx - gapsPx) + sceneAt(T) * 3;
+}
+function pxToTime(x) {
+  const gapsPx = 3 * (SCENES.length - 1), wpx = ui.timeline.clientWidth;
+  // walk segments to honour the gaps
+  let acc = 0;
+  for (let k = 0; k < SCENES.length; k++) {
+    const sw = (SCENES[k].dur / TOTAL) * (wpx - gapsPx);
+    if (x <= acc + sw || k === SCENES.length - 1) return clamp(SCENES[k].t0 + clamp((x - acc) / sw) * SCENES[k].dur, 0, TOTAL);
+    acc += sw + 3;
+  }
+  return TOTAL;
+}
+
+let T = 0, playing = !reduceMotion, speed = 1, lastScene = -1, toastTimer = 0, cache = {};
+function setText(el, key, v) { if (cache[key] !== v) { cache[key] = v; el.textContent = v; } }
+
+function updateUI(age) {
+  const i = sceneAt(T), s = SCENES[i];
+  if (i !== lastScene) {
+    lastScene = i;
+    document.documentElement.style.setProperty('--era', s.color);
+    ui.era.textContent = s.name;
+    ui.desc.textContent = s.text;
+    ui.chapter.textContent = `Bölüm ${i + 1} / ${SCENES.length}`;
+    ui.chapterSpan.textContent = s.a1 === 0 ? `${fmtMy(s.a0)} My – bugün` : `${fmtMy(s.a0)}–${fmtMy(s.a1)} My`;
+    SCENES.forEach((x, k) => x.el.classList.toggle('on', k === i));
+  }
+  const [num, unit] = fmtAge(age);
+  setText(ui.ageNum, 'an', num); setText(ui.ageUnit, 'au', unit);
+  setText(ui.since, 'si', 'Güneş Sistemi\'nin yaşı: ' + fmtSpan(SCENES[0].a0 - age));
+  const planet = i >= 2;
+  setText(ui.rTemp, 'rt', planet ? nf0.format(Math.round(kf(KF.temp, age) / 5) * 5) + ' °C' : '−200…1.500 °C');
+  setText(ui.rMass, 'rm', i === 0 ? '—' : '%' + (kf(KF.mass, age) < 10 ? nf1 : nf0).format(kf(KF.mass, age)));
+  setText(ui.rDay, 'rd', age < 4506 ? nf1.format(kf(KF.day, age)) + ' saat' : '—');
+  setText(ui.rMoon, 'rmo', age < 4506 ? nf0.format(Math.round(kf(KF.moonKm, age) / 100) * 100) + ' km' : '—');
+  setText(ui.rAtmo, 'ra', atmoText(age));
+  for (let k = 0; k < SCENES.length; k++) {
+    const w = (clamp((T - SCENES[k].t0) / SCENES[k].dur) * 100).toFixed(2) + '%';
+    if (cache['f' + k] !== w) { cache['f' + k] = w; SCENES[k].fill.style.width = w; }
+  }
+  ui.playhead.style.left = timeToPx(T) + 'px';
+  ui.timeline.setAttribute('aria-valuenow', Math.round(T / TOTAL * 100));
+  ui.timeline.setAttribute('aria-valuetext', num + ' ' + unit);
+  for (const ev of EVENTS) if (ev.el) ev.el.classList.toggle('past', ev.t <= T);
+}
+
+function showToast(ev) {
+  const [n, u] = fmtAge(ev.age);
+  ui.toast.innerHTML = '';
+  const i = document.createElement('i'); i.textContent = n + ' ' + u.replace(' önce', '');
+  ui.toast.append(i, document.createTextNode(ev.text));
+  ui.toast.hidden = false;
+  ui.toast.style.animation = 'none'; void ui.toast.offsetWidth; ui.toast.style.animation = '';
+  toastTimer = 4.2;
+}
+
+function setPlaying(p) {
+  playing = p;
+  ui.icoPlay.hidden = p; ui.icoPause.hidden = !p;
+  ui.play.setAttribute('aria-label', p ? 'Duraklat' : 'Oynat');
+}
+function seek(t) {
+  T = clamp(t, 0, TOTAL);
+  impacts.length = 0;
+  ui.toast.hidden = true;
+}
+
+ui.play.addEventListener('click', () => {
+  if (!playing && T >= TOTAL) seek(0);
+  setPlaying(!playing);
+});
+ui.restart.addEventListener('click', () => { seek(0); setPlaying(true); });
+document.querySelectorAll('.speed button').forEach(b => b.addEventListener('click', () => {
+  speed = parseFloat(b.dataset.speed);
+  document.querySelectorAll('.speed button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+ui.more.addEventListener('click', () => {
+  const open = ui.desc.classList.toggle('open');
+  ui.more.textContent = open ? 'Daha az göster' : 'Devamını oku';
+  ui.more.setAttribute('aria-expanded', String(open));
+});
+{
+  let drag = false;
+  const at = e => { const r = ui.timeline.getBoundingClientRect(); seek(pxToTime(e.clientX - r.left)); };
+  ui.timeline.addEventListener('pointerdown', e => { drag = true; ui.timeline.setPointerCapture(e.pointerId); at(e); });
+  ui.timeline.addEventListener('pointermove', e => { if (drag) at(e); });
+  const end = () => { drag = false; };
+  ui.timeline.addEventListener('pointerup', end);
+  ui.timeline.addEventListener('pointercancel', end);
+  ui.timeline.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 8 : 2;
+    if (e.key === 'ArrowRight') { seek(T + step); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { seek(T - step); e.preventDefault(); }
+    else if (e.key === 'Home') { seek(0); e.preventDefault(); }
+    else if (e.key === 'End') { seek(TOTAL); e.preventDefault(); }
+    else if (e.key === 'PageDown') { seek(SCENES[Math.min(SCENES.length - 1, sceneAt(T) + 1)].t0); e.preventDefault(); }
+    else if (e.key === 'PageUp') { seek(SCENES[Math.max(0, sceneAt(T) - 1)].t0); e.preventDefault(); }
+  });
+}
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); ui.play.click(); }
+});
+
+/* ================================================================ main loop */
+let lastNow = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastNow) / 1000);
+  lastNow = now;
+  const prevT = T;
+  if (playing) {
+    T = Math.min(TOTAL, T + dt * speed);
+    if (T >= TOTAL) setPlaying(false);
+  }
+  clock += dt;
+  const age = ageAt(T), i = sceneAt(T), u = sceneU(T, i);
+
+  // planet spin follows the length of the day: a young Earth spun much faster
+  const day = age < 4506 ? kf(KF.day, age) : 7;
+  spin += dt * 0.28 * (24 / day) * (reduceMotion ? 0.3 : 1);
+  cspin += dt * 0.28 * (24 / day) * 0.93 * (reduceMotion ? 0.3 : 1);
+  if (age < THEIA_AGE || i === 3) {
+    const dN = clamp((kf(KF.moonKm, age) - 25000) / (384400 - 25000));
+    const dist = lerp(Rfull * 1.75, moonMax, Math.pow(dN, 0.8));
+    moonAng += dt * Math.min(1.4, 0.25 * Math.pow(moonMax / dist, 1.5)) * (reduceMotion ? 0.3 : 1);
+  }
+
+  // events crossed while playing
+  if (playing && T > prevT) {
+    const a0 = ageAt(prevT);
+    for (const ev of EVENTS) {
+      if (a0 > ev.age && age <= ev.age) {
+        showToast(ev);
+        if (ev.impact) spawnImpact(true);
+      }
+    }
+    if (i >= 2) {
+      const n = impactRate(age, i, u) * dt * speed;
+      if (Math.random() < n) spawnImpact(false);
+    }
+  }
+  if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ui.toast.hidden = true; }
+
+  // draw
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(starCv, 0, 0);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const diskA = i < 2 ? 1 : i === 2 ? 1 - sstep(0.18, 0.32, u) : 0;
+  if (i >= 1 && diskA > 0) nbSync(T);
+  if (diskA > 0) drawDiskView(T, diskA);
+  if (i >= 2) {
+    const pA = i === 2 ? sstep(0.13, 0.3, u) : 1;
+    drawPlanetScene(T, age, pA, dt);
+  }
+  updateUI(age);
+  requestAnimationFrame(frame);
+}
+
+function start(data) {
+  buildTextures();
+  layout();
+  placeMarks();
+  if (data && typeof data.T === 'number') seek(data.T);
+  if (data && typeof data.speed === 'number') {
+    speed = data.speed;
+    document.querySelectorAll('.speed button').forEach(x => x.setAttribute('aria-pressed', String(parseFloat(x.dataset.speed) === speed)));
+  }
+  setPlaying(playing);
+  let rt = 0;
+  const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { layout(); placeMarks(); }, 120); };
+  window.addEventListener('resize', onResize);
+  if (window.ResizeObserver) new ResizeObserver(onResize).observe(stageEl);
+  requestAnimationFrame(t => { lastNow = t; frame(t); });
+}
+
+const hot = window.claude && window.claude.hot;
+if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ T, speed }));
+if (hot && typeof hot.ready === 'function') hot.ready(start);
+else start((hot && hot.data) || {});
+})();
+</script>
+</body>
+</html>
