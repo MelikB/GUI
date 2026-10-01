@@ -6,20 +6,27 @@
 <title>Dünya'nın Doğuşu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..600;1,400..500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: full-bleed space canvas; header top-left, chapter panel on the right, timeline dock across the bottom.
-   One deliberate dark look (deep space). The accent follows the era: dust violet → magma → ocean → life. */
+/* Layout: a full-bleed film frame. Title block top-left, chapter dossier on the right (a bottom sheet on phones),
+   narration subtitles over the picture, transport + timeline along the bottom edge.
+   Documentary look: one dark world, a serif voice for titles and narration, mono for instruments and data.
+   The accent follows the era: dust violet → magma → ocean → life. */
 :root {
-  --void: #04060c;
-  --ink: #e7eaf3;
-  --ink-2: #99a2b8;
-  --line: rgba(150, 165, 205, 0.2);
-  --panel: rgba(7, 10, 19, 0.66);
+  --void: #05070c;
+  --ink: #ece8df;
+  --ink-2: #a1a7b5;
+  --ink-3: #6f7686;
+  --line: rgba(160, 170, 200, 0.18);
+  --panel: rgba(9, 11, 18, 0.74);
+  --panel-solid: #0a0d15;
   --era: #b9a6ff;
-  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --f-title: "Lora", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --bar: 0px;
   color-scheme: dark;
 }
 html, body { height: 100%; }
@@ -27,57 +34,61 @@ body {
   margin: 0;
   background: var(--void);
   color: var(--ink);
-  font: 400 14px/1.55 var(--f-body);
+  font: 400 14px/1.55 var(--f-ui);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 [hidden] { display: none !important; }
+button { font: inherit; color: inherit; }
 #sky, #gl, #ovl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #gl { opacity: 0; pointer-events: none; touch-action: none; }
 #ovl { pointer-events: none; }
 body.gl-on #gl { pointer-events: auto; cursor: grab; }
 body.gl-on #gl:active { cursor: grabbing; }
 
+/* film treatment: vignette, grain and letterbox bars */
+.fx { position: fixed; inset: 0; pointer-events: none; }
+.vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%); }
+.grain { position: absolute; inset: -50%; opacity: 0.05; mix-blend-mode: overlay; animation: grain 0.9s steps(6) infinite; }
+@keyframes grain { 0% { transform: translate(0, 0); } 20% { transform: translate(-3%, 2%); } 40% { transform: translate(2%, -4%); } 60% { transform: translate(-4%, -1%); } 80% { transform: translate(3%, 3%); } 100% { transform: translate(0, 0); } }
+.lb { position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height 0.9s cubic-bezier(.6, 0, .2, 1); }
+.lb.top { top: 0; } .lb.bot { bottom: 0; }
+body.cinema .lb { height: 9vh; }
+
 .app {
   position: relative;
   box-sizing: border-box;
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   grid-template-rows: auto minmax(0, 1fr) auto;
   column-gap: 28px;
   row-gap: 12px;
   padding-inline: 28px;
   padding-block: 22px 18px;
   pointer-events: none;
+  transition: opacity 0.6s;
 }
-.head, .panel, .dock, .views { pointer-events: auto; }
+.head, .sheet, .dock, .views { pointer-events: auto; }
+body.cinema .app, body.intro-on .app { opacity: 0; }
 
-.head { grid-column: 1; grid-row: 1; min-width: 0; text-shadow: 0 1px 12px rgba(4, 6, 12, 0.7); }
-.eyebrow {
-  margin: 0 0 6px;
-  font: 500 11px/1.3 var(--f-mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-2);
+.head { grid-column: 1; grid-row: 1; min-width: 0; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75); }
+.kicker {
+  margin: 0 0 8px;
+  display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
+  font: 500 11px/1.3 var(--f-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2);
 }
-.eyebrow b { color: var(--era); font-weight: 500; transition: color .8s; }
+.kicker b { color: var(--era); font-weight: 500; transition: color 0.8s; }
 h1 {
   margin: 0;
-  font: 750 clamp(30px, 5.2vw, 60px)/0.98 var(--f-display);
-  font-variation-settings: "opsz" 96;
-  letter-spacing: -0.02em;
+  font: 500 clamp(30px, 4.8vw, 58px)/1 var(--f-title);
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
-.age {
-  margin: 10px 0 0;
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px;
-  font-family: var(--f-mono);
-  font-variant-numeric: tabular-nums;
-}
-.age #ageNum { font-size: clamp(20px, 2.6vw, 28px); font-weight: 500; color: var(--era); transition: color .8s; }
+.age { margin: 12px 0 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px; font-family: var(--f-mono); }
+.age #ageNum { font-size: clamp(20px, 2.4vw, 27px); font-weight: 500; color: var(--era); transition: color 0.8s; }
 .age #ageUnit { font-size: 13px; color: var(--ink-2); }
-.since { margin: 2px 0 0; font: 400 12px/1.4 var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.since { margin: 3px 0 0; font: 400 12px/1.4 var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
 
 #stage { grid-column: 1; grid-row: 2; position: relative; min-height: 0; }
 .views {
@@ -89,150 +100,225 @@ h1 {
 }
 .views button {
   border: 0; background: none; color: var(--ink-2);
-  font: 500 12px/1 var(--f-body);
-  padding: 7px 11px; border-radius: 999px; cursor: pointer;
-  white-space: nowrap;
+  font: 500 12px/1 var(--f-ui);
+  padding: 7px 11px; border-radius: 999px; cursor: pointer; white-space: nowrap;
 }
-.views button[aria-pressed="true"] { background: rgba(150, 165, 205, 0.2); color: var(--ink); }
-.views button[aria-pressed="true"].auto-on { box-shadow: inset 0 0 0 1px var(--era); }
-.views button:disabled { opacity: .35; cursor: not-allowed; }
-.toast {
-  position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
-  max-width: min(460px, 100%);
-  box-sizing: border-box;
-  padding: 8px 14px;
-  border-radius: 999px;
+.views button[aria-pressed="true"] { background: rgba(160, 170, 200, 0.2); color: var(--ink); }
+.views button.auto-on[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--era); }
+.views button:disabled { opacity: 0.35; cursor: not-allowed; }
+.event {
+  position: absolute; top: 46px; right: 0;
+  max-width: min(340px, 100%); box-sizing: border-box;
+  padding: 9px 13px 10px;
+  border-left: 2px solid var(--era);
   background: var(--panel);
-  border: 1px solid var(--line);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  font: 500 13px/1.35 var(--f-body);
-  text-align: center;
-  animation: toastIn .45s ease-out;
+  font: 500 13px/1.4 var(--f-ui);
+  animation: evIn 0.5s ease-out;
 }
-.toast i { font-style: normal; font-family: var(--f-mono); color: var(--era); margin-right: 6px; }
-@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } }
+.event small { display: block; margin-bottom: 2px; font: 500 10px/1.3 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--era); }
+@keyframes evIn { from { opacity: 0; transform: translateY(-6px); } }
+.sub {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  width: min(680px, 100%); box-sizing: border-box; margin: 0;
+  text-align: center;
+  font: 400 clamp(16px, 1.6vw, 20px)/1.45 var(--f-title);
+  color: #f5f2ea;
+  text-shadow: 0 1px 2px #000, 0 0 18px rgba(0, 0, 0, 0.9);
+  text-wrap: balance;
+  transition: opacity 0.5s;
+}
+.sub:empty { opacity: 0; }
 
-.panel {
-  grid-column: 2; grid-row: 1 / span 2; align-self: start;
-  min-width: 0;
-  display: grid; gap: 14px;
-  padding: 18px 18px 16px;
+/* chapter dossier: a side panel on wide screens, a bottom sheet on phones */
+.sheet { grid-column: 2; grid-row: 1 / span 2; min-height: 0; display: flex; }
+.sheet-body {
+  flex: 1; min-height: 0; min-width: 0;
+  display: flex; flex-direction: column;
   border-radius: 14px;
   background: var(--panel);
   border: 1px solid var(--line);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
 }
-.chapter {
-  margin: 0;
-  display: flex; justify-content: space-between; gap: 8px;
-  font: 500 11px/1.3 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
+.grip { display: none; }
+.tabs { display: flex; gap: 2px; padding: 8px 8px 0; border-bottom: 1px solid var(--line); flex: none; }
+.tabs button {
+  flex: 1; border: 0; background: none; cursor: pointer;
+  padding: 9px 6px 10px; color: var(--ink-2);
+  font: 500 12px/1 var(--f-ui); letter-spacing: 0.02em;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
-.chapter span:last-child { color: var(--era); transition: color .8s; text-align: right; }
-.desc { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ink); max-width: 62ch; }
-.more {
-  display: none; justify-self: start;
-  padding: 0; border: 0; background: none; color: var(--era);
-  font: 500 12px/1.4 var(--f-body); cursor: pointer;
-}
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--era); }
+.peek { display: none; }
+.sheet-content { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 18px 18px; }
+.sheet-content section { display: grid; gap: 14px; }
+.meta { margin: 0; display: flex; justify-content: space-between; gap: 8px; font: 500 11px/1.3 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.meta span:first-child { white-space: nowrap; }
+.meta span:last-child { color: var(--era); text-align: right; }
+.desc { margin: 0; font: 400 15px/1.65 var(--f-title); color: var(--ink); }
+.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.facts li { padding-left: 14px; position: relative; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.facts li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 1px; background: var(--era); }
+.h3 { margin: 4px 0 0; font: 500 10.5px/1.3 var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+
 .readouts {
   margin: 0;
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: 10px; overflow: hidden;
+  background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
 }
-.readouts > div { background: var(--void); padding: 8px 10px; min-width: 0; }
+.readouts > div { background: var(--panel-solid); padding: 8px 10px; min-width: 0; }
 .readouts .wide { grid-column: 1 / -1; }
 .readouts dt { font: 500 10px/1.3 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
-.readouts dd { margin: 3px 0 0; font: 500 15px/1.3 var(--f-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.readouts dd { margin: 3px 0 0; font: 500 15px/1.3 var(--f-mono); overflow-wrap: anywhere; }
+.readouts dd small { display: block; font: 400 11px/1.35 var(--f-mono); color: var(--ink-3); }
 
-.dock {
-  grid-column: 1 / -1; grid-row: 3;
-  display: flex; align-items: center; gap: 14px;
+.chart { display: grid; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button {
+  border: 1px solid var(--line); background: none; color: var(--ink-2); cursor: pointer;
+  padding: 5px 9px; border-radius: 999px; font: 500 11.5px/1 var(--f-ui);
 }
+.chips button[aria-checked="true"] { color: var(--ink); border-color: var(--ink-2); background: rgba(160, 170, 200, 0.12); }
+.chart-title { margin: 2px 0 0; font: 600 13px/1.3 var(--f-ui); }
+.chart-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--ink-2); }
+.chart-box { position: relative; }
+.chart-box svg { display: block; width: 100%; height: 180px; overflow: visible; }
+.chart-box svg text { font: 400 10px var(--f-mono); fill: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
+.tip {
+  position: absolute; top: 0; pointer-events: none;
+  padding: 7px 9px; border-radius: 8px;
+  background: rgba(10, 13, 21, 0.95); border: 1px solid var(--line);
+  font: 400 11.5px/1.45 var(--f-ui); white-space: nowrap;
+}
+.tip b { display: block; font: 600 13px/1.3 var(--f-mono); color: var(--ink); }
+.tip .row { display: flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tip .row i { width: 10px; height: 2px; display: inline-block; }
+details.table summary { cursor: pointer; font-size: 12px; color: var(--ink-2); }
+details.table table { width: 100%; margin-top: 8px; border-collapse: collapse; font: 400 11.5px/1.4 var(--f-mono); font-variant-numeric: tabular-nums; }
+details.table th, details.table td { text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+details.table th:first-child, details.table td:first-child { text-align: left; }
+
+.sci { display: grid; gap: 12px; }
+.eq { padding: 11px 12px; border-radius: 10px; background: rgba(160, 170, 200, 0.06); border: 1px solid var(--line); display: grid; gap: 6px; }
+.eq h4 { margin: 0; font: 600 13px/1.35 var(--f-ui); }
+.eq code { display: block; font: 400 13px/1.5 var(--f-mono); color: var(--ink); overflow-wrap: anywhere; white-space: normal; }
+.eq p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+.eq output { font: 500 12.5px/1.4 var(--f-mono); color: var(--era); }
+.refs { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.5; color: var(--ink-2); }
+
+.dock { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; gap: 12px; }
 .btn {
-  flex: none;
-  width: 42px; height: 42px;
+  flex: none; width: 42px; height: 42px;
   display: grid; place-items: center;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--ink);
-  cursor: pointer;
+  border-radius: 50%; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); cursor: pointer;
   font: 500 12px/1 var(--f-mono);
-  transition: border-color .2s, background .2s;
+  transition: border-color 0.2s, background 0.2s;
 }
 .btn:hover { border-color: var(--era); }
 .btn.primary { background: var(--era); color: var(--void); border-color: transparent; }
+.btn[aria-pressed="true"] { border-color: var(--era); color: var(--era); }
 .btn svg { width: 18px; height: 18px; fill: currentColor; }
-.btn:focus-visible, .timeline:focus-visible, .views button:focus-visible, .more:focus-visible {
+.btn:focus-visible, .timeline:focus-visible, .views button:focus-visible, .tabs button:focus-visible, .chips button:focus-visible, .grip:focus-visible, .cta:focus-visible {
   outline: 2px solid var(--era); outline-offset: 3px;
 }
-.timeline {
-  position: relative; flex: 1 1 auto; min-width: 0;
-  height: 46px;
-  cursor: pointer;
-  touch-action: none;
-  border-radius: 8px;
-}
+.timeline { position: relative; flex: 1 1 auto; min-width: 0; height: 46px; cursor: pointer; touch-action: none; border-radius: 8px; }
 .segs { position: absolute; left: 0; right: 0; top: 14px; display: flex; gap: 3px; }
 .seg { position: relative; min-width: 0; }
-.seg .bar { height: 6px; border-radius: 3px; background: rgba(150, 165, 205, 0.22); overflow: hidden; }
-.seg .fill { height: 100%; width: 0; background: var(--era); transition: background .8s; }
-.seg .lbl {
-  display: block; margin-top: 7px;
-  font: 500 10px/1.2 var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--ink-2);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.seg .bar { height: 6px; border-radius: 3px; background: rgba(160, 170, 200, 0.2); overflow: hidden; }
+.seg .fill { height: 100%; width: 0; background: var(--era); transition: background 0.8s; }
+.seg .lbl { display: block; margin-top: 7px; font: 500 10px/1.2 var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .seg.on .lbl { color: var(--ink); }
 .marks { position: absolute; left: 0; right: 0; top: 4px; height: 6px; }
-.mark { position: absolute; top: 0; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--ink-2); opacity: .7; }
-.mark.past { background: var(--era); opacity: 1; }
-.playhead {
-  position: absolute; top: 8px; width: 2px; height: 18px; margin-left: -1px;
-  background: var(--ink); border-radius: 1px;
-  box-shadow: 0 0 10px var(--era);
+.mark { position: absolute; top: 0; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--ink-3); }
+.mark.past { background: var(--era); }
+.playhead { position: absolute; top: 8px; width: 2px; height: 18px; margin-left: -1px; background: var(--ink); border-radius: 1px; box-shadow: 0 0 10px var(--era); }
+
+/* chapter title card */
+.card {
+  position: fixed; inset: 0; display: grid; place-content: center; text-align: center; gap: 14px;
+  padding-inline: 24px; pointer-events: none;
+  animation: cardIn 3.6s ease-in-out forwards;
 }
+.card p { margin: 0; }
+.card .no { font: 500 12px/1 var(--f-mono); letter-spacing: 0.32em; text-transform: uppercase; color: var(--era); }
+.card h2 { margin: 0; font: 400 clamp(36px, 7vw, 84px)/1.02 var(--f-title); letter-spacing: -0.01em; text-shadow: 0 2px 30px rgba(0, 0, 0, 0.8); text-wrap: balance; }
+.card .date { font: 400 13px/1.4 var(--f-mono); color: var(--ink-2); letter-spacing: 0.06em; }
+.card .rule { width: 48px; height: 1px; margin: 4px auto 0; background: var(--era); }
+@keyframes cardIn { 0% { opacity: 0; transform: scale(1.03); } 18% { opacity: 1; transform: none; } 78% { opacity: 1; } 100% { opacity: 0; } }
+
+/* opening */
+.intro {
+  position: fixed; inset: 0; display: grid; place-items: center; padding: 24px;
+  background: radial-gradient(80% 70% at 50% 50%, rgba(5, 7, 12, 0.35), rgba(5, 7, 12, 0.92));
+}
+.intro-inner { max-width: 620px; display: grid; gap: 18px; justify-items: center; text-align: center; }
+.intro .no { margin: 0; font: 500 11px/1.3 var(--f-mono); letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-2); }
+.intro h2 { margin: 0; font: 400 clamp(44px, 9vw, 96px)/0.98 var(--f-title); letter-spacing: -0.015em; }
+.intro p.lede { margin: 0; max-width: 46ch; font: 400 17px/1.6 var(--f-title); color: var(--ink-2); }
+.intro .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
+.cta { border: 1px solid var(--line); background: rgba(160, 170, 200, 0.08); color: var(--ink); cursor: pointer; padding: 12px 20px; border-radius: 999px; font: 500 14px/1 var(--f-ui); }
+.cta.primary { background: var(--ink); color: var(--void); border-color: transparent; }
+.intro small { font-size: 12px; color: var(--ink-3); max-width: 44ch; }
 
 @media (max-width: 860px) {
   .app {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(200px, 1fr) auto auto;
+    grid-template-rows: auto minmax(160px, 1fr) 116px auto;
     padding-inline: 16px;
-    padding-block: 14px 12px;
-    row-gap: 10px;
+    padding-block: 14px 10px;
+    row-gap: 8px;
   }
-  .panel { grid-column: 1; grid-row: 3; padding: 12px 14px; gap: 10px; }
-  .dock { grid-row: 4; flex-wrap: wrap; gap: 10px; }
-  .timeline { order: -1; flex-basis: 100%; }
+  h1 { font-size: 28px; }
+  .age { margin-top: 6px; }
   .views { left: 50%; right: auto; transform: translateX(-50%); }
   .views button { padding: 6px 9px; font-size: 11px; }
-  .desc { font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .desc.open { display: block; }
-  .more { display: inline; }
-  .readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .readouts dd { font-size: 12.5px; }
+  .event { top: 42px; left: 0; right: 0; margin-inline: auto; }
+  .sub { font-size: 15.5px; bottom: 4px; }
+  .sheet { grid-column: 1; grid-row: 3; position: relative; }
+  .sheet-body { position: absolute; left: 0; right: 0; bottom: 0; max-height: 116px; transition: max-height 0.45s cubic-bezier(.3, .7, .2, 1); }
+  .sheet.open .sheet-body { max-height: min(64vh, calc(100vh - 160px)); }
+  .grip { display: grid; place-items: center; height: 18px; border: 0; background: none; cursor: pointer; flex: none; padding: 0; }
+  .grip span { width: 38px; height: 4px; border-radius: 2px; background: var(--ink-3); }
+  .tabs { padding-top: 0; }
+  .peek { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 9px 14px 10px; flex: none; }
+  .peek div { min-width: 0; }
+  .peek dt { font: 500 9.5px/1.2 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+  .peek dd { margin: 2px 0 0; font: 500 13px/1.25 var(--f-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sheet.open .peek { display: none; }
+  .sheet-content { padding: 14px 14px 18px; }
+  .sheet:not(.open) .sheet-content { display: none; }
+  .readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dock { grid-row: 4; flex-wrap: wrap; gap: 10px; }
+  .timeline { order: -1; flex-basis: 100%; }
   .seg .lbl { visibility: hidden; }
   .seg.on .lbl { visibility: visible; overflow: visible; }
+  body.cinema .lb { height: 7vh; }
 }
-@media (max-width: 860px) and (max-height: 760px) {
+@media (max-width: 860px) and (max-height: 700px) {
   .since { display: none; }
-  .readouts > div { padding: 6px 8px; }
+  .app { grid-template-rows: auto minmax(140px, 1fr) 116px auto; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .toast { animation: none; }
+  .grain { animation: none; }
+  .event { animation: none; }
+  .card { animation-duration: 2.4s; }
 }
 </style>
 </head>
-<body>
+<body class="intro-on">
 <canvas id="sky" aria-hidden="true"></canvas>
 <canvas id="gl" aria-label="Üç boyutlu görünüm: sürükleyerek döndürün"></canvas>
 <canvas id="ovl" aria-hidden="true"></canvas>
+<div class="fx" aria-hidden="true"><div class="vignette"></div><div class="grain" id="grain"></div><div class="lb top"></div><div class="lb bot"></div></div>
 
 <div class="app">
   <header class="head">
-    <p class="eyebrow">Dünya'nın Doğuşu · <b>4,57 milyar yıl</b></p>
+    <p class="kicker"><span>Dünya'nın Doğuşu</span><b id="chapNo">Bölüm I</b></p>
     <h1 id="era">Güneş Bulutsusu</h1>
     <p class="age"><span id="ageNum">4,568</span><span id="ageUnit">milyar yıl önce</span></p>
     <p class="since" id="since">Güneş Sistemi'nin yaşı: 0 yıl</p>
@@ -245,28 +331,65 @@ h1 {
       <button type="button" data-view="surface" aria-pressed="false">Yüzey</button>
       <button type="button" data-view="interior" aria-pressed="false">İç yapı</button>
     </div>
-    <div id="toast" class="toast" hidden></div>
+    <div id="event" class="event" role="status" hidden></div>
+    <p id="sub" class="sub" aria-live="polite"></p>
   </div>
 
-  <aside class="panel" aria-live="polite">
-    <p class="chapter"><span id="chapter">Bölüm 1 / 13</span><span id="chapterSpan">4.568–4.567 My</span></p>
-    <p class="desc" id="desc"></p>
-    <button class="more" id="more" type="button" aria-expanded="false">Devamını oku</button>
-    <dl class="readouts">
-      <div><dt>Sıcaklık</dt><dd id="rTemp">—</dd></div>
-      <div><dt>Basınç</dt><dd id="rPres">—</dd></div>
-      <div><dt>Kütle</dt><dd id="rMass">—</dd></div>
-      <div><dt>Gün</dt><dd id="rDay">—</dd></div>
-      <div><dt>Ay mesafesi</dt><dd id="rMoon">—</dd></div>
-      <div><dt>Çekirdek</dt><dd id="rCore">—</dd></div>
-      <div class="wide"><dt>Atmosfer</dt><dd id="rAtmo">—</dd></div>
-    </dl>
+  <aside class="sheet" id="sheet" aria-label="Bölüm dosyası">
+    <div class="sheet-body">
+      <button class="grip" id="grip" type="button" aria-expanded="false" aria-controls="sheetContent" aria-label="Paneli aç"><span></span></button>
+      <div class="tabs" role="tablist" aria-label="Bölüm dosyası">
+        <button type="button" role="tab" id="tab-story" aria-selected="true" aria-controls="p-story">Anlatım</button>
+        <button type="button" role="tab" id="tab-data" aria-selected="false" aria-controls="p-data" tabindex="-1">Veriler</button>
+        <button type="button" role="tab" id="tab-sci" aria-selected="false" aria-controls="p-sci" tabindex="-1">Bilim</button>
+      </div>
+      <dl class="peek" id="peek">
+        <div><dt>Sıcaklık</dt><dd id="kTemp">—</dd></div>
+        <div><dt>Gün</dt><dd id="kDay">—</dd></div>
+        <div><dt>Ay</dt><dd id="kMoon">—</dd></div>
+      </dl>
+      <div class="sheet-content" id="sheetContent">
+        <section id="p-story" role="tabpanel" aria-labelledby="tab-story">
+          <p class="meta"><span id="chapter">Bölüm 1 / 13</span><span id="chapterSpan">4.568–4.567 My</span></p>
+          <p class="desc" id="desc"></p>
+          <p class="h3">Bu bölümde</p>
+          <ul class="facts" id="facts"></ul>
+        </section>
+        <section id="p-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+          <dl class="readouts">
+            <div><dt>Yüzey sıcaklığı</dt><dd id="rTemp">—</dd></div>
+            <div><dt>Basınç</dt><dd id="rPres">—</dd></div>
+            <div><dt>Güneş parlaklığı</dt><dd id="rSun">—</dd></div>
+            <div><dt>Sera ısınması</dt><dd id="rGh">—</dd></div>
+            <div><dt>Gün uzunluğu</dt><dd id="rDay">—</dd></div>
+            <div><dt>Ay mesafesi</dt><dd id="rMoon">—</dd></div>
+            <div><dt>Radyojenik ısı</dt><dd id="rHeat">—</dd></div>
+            <div><dt>Çekirdek</dt><dd id="rCore">—</dd></div>
+            <div><dt>Kütle</dt><dd id="rMass">—</dd></div>
+            <div><dt>Oksijen</dt><dd id="rO2">—</dd></div>
+            <div class="wide"><dt>Atmosfer</dt><dd id="rAtmo">—</dd></div>
+          </dl>
+          <div class="chart">
+            <p class="h3">Dünya tarihi boyunca</p>
+            <div class="chips" id="chips" role="radiogroup" aria-label="Grafikte gösterilecek değişken"></div>
+            <p class="chart-title" id="chartTitle"></p>
+            <div class="legend" id="legend"></div>
+            <div class="chart-box" id="chartBox"></div>
+            <p class="chart-note" id="chartNote"></p>
+            <details class="table" id="tableBox"><summary>Veriyi tablo olarak göster</summary><div id="tableWrap"></div></details>
+          </div>
+        </section>
+        <section id="p-sci" role="tabpanel" aria-labelledby="tab-sci" hidden>
+          <div class="sci" id="sciBody"></div>
+        </section>
+      </div>
+    </div>
   </aside>
 
   <footer class="dock">
-    <button class="btn primary" id="play" type="button" aria-label="Duraklat">
-      <svg viewBox="0 0 24 24" id="icoPause"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-      <svg viewBox="0 0 24 24" id="icoPlay" hidden><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+    <button class="btn primary" id="play" type="button" aria-label="Oynat">
+      <svg viewBox="0 0 24 24" id="icoPause" hidden><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" id="icoPlay"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
     </button>
     <button class="btn" id="restart" type="button" aria-label="Baştan başlat">
       <svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
@@ -277,7 +400,28 @@ h1 {
       <div class="playhead" id="playhead"></div>
     </div>
     <button class="btn" id="speed" type="button" aria-label="Simülasyon hızı: 1×">1×</button>
+    <button class="btn" id="narr" type="button" aria-pressed="false" aria-label="Sesli anlatım">
+      <svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.92V21h-2v-2.08A7 7 0 0 1 5 12z"/></svg>
+    </button>
+    <button class="btn" id="snd" type="button" aria-pressed="false" aria-label="Ortam sesi">
+      <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg>
+    </button>
   </footer>
+</div>
+
+<div class="card" id="card" hidden aria-hidden="true"><p class="no" id="cardNo"></p><h2 id="cardTitle"></h2><div class="rule"></div><p class="date" id="cardDate"></p></div>
+
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+  <div class="intro-inner">
+    <p class="no">Belgesel simülasyon · 13 bölüm</p>
+    <h2 id="introTitle">Dünya'nın Doğuşu</h2>
+    <p class="lede">Bir gaz ve toz bulutundan yaşam dolu bir gezegene: 4,57 milyar yıl, fizik yasalarıyla hesaplanan sahneler ve bilimsel kanıtlarla.</p>
+    <div class="actions">
+      <button class="cta primary" id="startVoice" type="button">Sesli izle</button>
+      <button class="cta" id="startQuiet" type="button">Sessiz izle</button>
+    </div>
+    <small id="introNote">Sesli anlatım tarayıcınızın Türkçe konuşma sesini kullanır. Anlatıcı konuşurken film onu bekler.</small>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -2049,7 +2193,7 @@ function drawSurfaceHUD(G, alpha) {
     octx.restore();
   }
   const km = Math.pow(Math.max(0, L.camY - L.gy) / 12, 1.6);
-  const x0 = cx - vw / 2 + 4, y1 = cy + vh / 2 - 40, y0 = Math.max(cy - vh / 2 + 56, y1 - 220);
+  const x0 = cx + vw / 2 - (W < 700 ? 120 : 200), y1 = cy + vh / 2 - (W < 700 ? 40 : 70), y0 = Math.max(cy - vh / 2 + 110, y1 - 220);
   const yAt = k => lerp(y1, y0, Math.sqrt(clamp(k / 120)));
   octx.save(); octx.scale(dpr, dpr); octx.globalAlpha = alpha;
   octx.strokeStyle = 'rgba(231,234,243,0.5)'; octx.lineWidth = 1;
@@ -2057,17 +2201,18 @@ function drawSurfaceHUD(G, alpha) {
   octx.font = '500 10px "IBM Plex Mono", monospace'; octx.textAlign = 'left';
   const layers = L.age > 2350 ? [[0, 'YÜZEY'], [12, L.steam > 0.3 ? 'BUHAR BULUTLARI' : 'TROPOSFER'], [60, 'ÜST ATMOSFER · OZON YOK']]
     : [[0, 'YÜZEY'], [12, 'TROPOSFER SINIRI'], [25, 'OZON TABAKASI'], [50, 'STRATOSFER'], [85, 'MEZOSFER']];
+  const narrow = W < 700;
   for (const [k, t] of layers) {
     const y = yAt(k);
     octx.fillStyle = 'rgba(231,234,243,0.65)'; octx.fillRect(x0 + 3, y - 0.5, 7, 1);
-    octx.fillStyle = 'rgba(231,234,243,0.75)'; octx.fillText(`${k} km  ${t}`, x0 + 14, y + 3);
+    octx.fillStyle = 'rgba(231,234,243,0.75)'; octx.fillText(narrow ? `${k} km` : `${k} km  ${t}`, x0 + 14, y + 3);
   }
   const y = yAt(km);
   octx.fillStyle = '#fff'; octx.beginPath(); octx.moveTo(x0 + 6, y); octx.lineTo(x0, y - 5); octx.lineTo(x0, y + 5); octx.fill();
   octx.font = '600 12px "IBM Plex Mono", monospace';
   octx.fillText(km < 0.05 ? 'İRTİFA: YÜZEY' : `İRTİFA: ${km < 10 ? nf1.format(km) : nf0.format(km)} km`, x0 + 14, y0 - 12);
   octx.font = '400 10px "IBM Plex Mono", monospace'; octx.fillStyle = 'rgba(231,234,243,0.6)';
-  octx.fillText('SÜRÜKLE: ETRAFINA BAK', x0 + 14, y1 + 18);
+  if (W >= 700) octx.fillText('SÜRÜKLE: ETRAFINA BAK', x0 + 14, y1 + 18);
   octx.restore();
 }
 
@@ -2084,20 +2229,224 @@ function desiredView(T) {
   return v;
 }
 
+/* ================================================================ physical models */
+// Quantities computed from physics rather than drawn by hand. Ages in My before present.
+const SIGMA = 5.670374e-8, S0 = 1361, T_SUN = 4570;
+// Faint young Sun: Gough (1981), L/L0 = [1 + 2/5 (1 - t/t0)]^-1, with 1 - t/t0 = age / t0
+const solarL = age => 1 / (1 + 0.4 * (clamp(age, 0, 4567) / T_SUN));
+const ALBEDO = [[4511, 0.12], [4440, 0.12], [4430, 0.45], [4300, 0.4], [4100, 0.3], [3800, 0.28], [2400, 0.3],
+  [725, 0.3], [708, 0.6], [640, 0.6], [628, 0.3], [0, 0.3]];
+// Radiative-equilibrium temperature with no greenhouse effect: T = [S(1 - A) / 4σ]^1/4
+const teff = age => Math.pow(S0 * solarL(age) * (1 - kf(ALBEDO, age)) / (4 * SIGMA), 0.25) - 273.15;
+// Radiogenic heat of the bulk silicate Earth: present-day TW per isotope, decay constants per Gyr
+const ISO = [
+  { n: '²³⁸U', p: 7.9, l: Math.LN2 / 4.468 }, { n: '²³⁵U', p: 0.33, l: Math.LN2 / 0.7038 },
+  { n: '²³²Th', p: 8.4, l: Math.LN2 / 14.05 }, { n: '⁴⁰K', p: 3.9, l: Math.LN2 / 1.248 },
+];
+const radHeat = age => ISO.reduce((s, i) => s + i.p * Math.exp(i.l * age / 1000), 0);
+// Atmospheric O2 relative to present (PAL) and CO2 partial pressure; interpolated in log space
+const O2_LOG = [[4400, -7], [2500, -6], [2420, -5], [2330, -2.3], [2100, -1], [1900, -2], [800, -2], [600, -1], [541, -0.6],
+  [420, 0], [300, 0.18], [200, -0.1], [0, 0]];
+const CO2_LOG = [[4430, 2], [4300, 1.5], [4000, 0.7], [3800, 0], [2700, -1], [2400, -1.3], [720, -2], [640, -1],
+  [600, -2.2], [541, -2.2], [400, -2.4], [300, -3.3], [100, -2.8], [0, -3.38]];
+const o2pal = age => Math.pow(10, kf(O2_LOG, age));
+const co2bar = age => Math.pow(10, kf(CO2_LOG, age));
+const CRUST = [[4400, 0], [4000, 8], [3500, 30], [3000, 60], [2500, 75], [1800, 90], [0, 100]];
+const tideX = km => Math.pow(384400 / km, 3);           // tidal forcing relative to today, ∝ 1/d³
+const moonDeg = km => 2 * Math.atan(1737 / km) * 180 / Math.PI;
+const ROCHE_R = 2.44 * Math.cbrt(5.51 / 3.34);            // Roche limit for a fluid Moon, Earth radii
+const E_THEIA = 0.5 * 6.4e23 * 9300 * 9300;               // ½mv² for a Mars-mass body at ~9.3 km/s
+const E_CHICX = 0.5 * (4 / 3 * Math.PI * 5000 ** 3 * 2600) * 20000 ** 2;
+
+/* ================================================================ narration and science */
+const sup = n => String(n).replace(/[0-9-]/g, c => '⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(c)] || '⁻');
+const sci10 = (x, d = 1) => { const e = Math.floor(Math.log10(x)); return nf1.format(x / 10 ** e).replace(',0', '') + '×10' + sup(e); };
+
+const STORY = {
+  nebula: {
+    beats: ['Dört buçuk milyar yıldan uzun bir süre önce, burada henüz hiçbir şey yoktu.',
+      'Yalnızca soğuk bir gaz ve toz bulutu vardı. Yakında patlayan bir yıldız onu sarstı.',
+      'Bulut çöktükçe hızlanarak döndü, yassılaştı ve merkezinde yeni bir yıldız ışımaya başladı.'],
+    facts: ['Bulutun sıcaklığı yalnızca 10–20 K; kütlesi Güneş\'inkinin birkaç katı.', 'Çöküş yaklaşık yüz bin yıl sürdü.', 'Güneş Sistemi\'nin "sıfır noktası": en eski katılar 4.567,3 milyon yaşında.'],
+  },
+  plan: {
+    beats: ['Diskte toz taneleri birbirine yapışıyor: çakıllar, kayalar, sonra dağ büyüklüğünde cisimler.',
+      'Güneş\'e yakın bölgede su donamayacak kadar sıcak. Burada yalnızca kaya ve metal katılaşabiliyor.',
+      'Çarpışan gezegencikler birleşiyor. Aralarından biri, bir gün Dünya olacak.'],
+    facts: ['Gezegencikler bu bölümde gerçek bir N-cisim hesabıyla hareket ediyor.', 'Kar çizgisi yaklaşık 2,7 AU\'da; Jüpiter onun dışında oluştu.', 'Dünya\'nın yörüngesinde yüzlerce Ay–Mars büyüklüğünde embriyo vardı.'],
+  },
+  accr: {
+    beats: ['Genç Dünya, yörüngesindeki gezegencikleri tek tek yutuyor.',
+      'Her çarpışma yüzeyi yeniden eritiyor. Gezegen, kızgın bir magma denizi.',
+      'Henüz bir Ay yok, okyanus yok, nefes alınacak bir hava yok.'],
+    facts: ['Büyüme hızı: birkaç on milyon yılda bugünkü kütlenin yaklaşık %90\'ı.', 'Alüminyum-26 (yarı ömrü 0,72 milyon yıl) ilk ısıtıcı.', 'Kütle arttıkça yüzey çekimi de artıyor.'],
+  },
+  iron: {
+    beats: ['Şimdi gezegenin içine bakalım.',
+      'Ağır demir, erimiş kayanın içinden damlalar halinde merkeze doğru çöküyor.',
+      'Yaklaşık otuz milyon yılda Dünya\'nın demir çekirdeği oluşuyor.'],
+    facts: ['Çekirdek bugün Dünya kütlesinin %32\'si.', 'Demirin çökmesi gezegeni ~2.000 °C daha ısıtabilecek enerji açığa çıkarır.', 'Altın ve platin gibi "demir sever" elementler de çekirdeğe sürüklendi.'],
+  },
+  theia: {
+    beats: ['Sonra Mars büyüklüğünde bir gezegen yaklaşıyor. Bilim insanları ona Theia diyor.',
+      'Çarpışma, iki dünyanın mantosunu birkaç saat içinde eritip buharlaştırıyor.',
+      'Enkaz uzaya fırlıyor ve Dünya\'nın çevresinde dönen kızgın bir diske dönüşüyor.'],
+    t: [0.03, 0.27, 0.6],
+    facts: ['Çarpışma enerjisi yaklaşık 10³¹ joule: bugünkü küresel enerji tüketiminin 10¹¹ yılı.', 'Bu bölümdeki enkaz bir parçacık simülasyonuyla hesaplanıyor.', 'Theia\'nın çekirdeği Dünya\'nın çekirdeğine karıştı; Ay bu yüzden demirce fakir.'],
+  },
+  moon: {
+    beats: ['Gelgit kuvvetleri, Roche sınırının içinde hiçbir şeyin bir araya gelmesine izin vermiyor.',
+      'Sınırın dışında ise parçacıklar küçük ay tohumlarında toplanıyor.',
+      'Belki yalnızca birkaç on yıl içinde, tohumlar birleşip Ay\'ı oluşturuyor.'],
+    facts: ['Roche sınırı ≈ 2,9 Dünya yarıçapı (≈18.400 km).', 'Ay ilk oluştuğunda ~25.000 km uzaktaydı; bugün 384.400 km.', 'Ay her yıl yaklaşık 3,8 cm uzaklaşıyor (lazer ölçümü).'],
+  },
+  magma: {
+    beats: ['Dünya bütünüyle erimiş. Yüzey sıcaklığı iki bin dereceyi aşıyor.',
+      'Gökyüzünde, bugünkünden on beş kat yakın, devasa bir Ay asılı.',
+      'Gezegen ısısını uzaya yayarak yavaş yavaş soğumaya başlıyor.'],
+    facts: ['Bir gün yalnızca ~5 saat sürüyor.', 'Ay\'ın gelgit kuvveti bugünkünün binlerce katı.', 'Atmosfer, buharlaşmış kaya ve su buharından oluşuyor.'],
+  },
+  cool: {
+    beats: ['Yeniden içeri bakalım. Magma okyanusu dipten yukarı doğru katılaşıyor.',
+      'Katılaşan mantoda, binlerce yıl süren yavaş konveksiyon akımları başlıyor.',
+      'Yüzeyde ilk ince kabuk oluşuyor; kayadan çıkan buhar kalın bir atmosfer biriktiriyor.'],
+    facts: ['Katılaşma birkaç milyon yıl sürdü.', 'Radyoaktif ısı o zaman bugünkünün yaklaşık beş katıydı.', 'Kristalleşen mantodan su ve CO₂ atmosfere kaçtı.'],
+  },
+  rain: {
+    beats: ['Yüzeye inelim. Gökyüzü, yüzlerce bar basınçta kızgın buharla dolu.',
+      'Atmosfer soğuduğunda yağmur başlıyor ve milyonlarca yıl dinmiyor.',
+      'Çukurlar doluyor. Dünya\'nın ilk okyanusları böyle doğuyor.'],
+    facts: ['Yaklaşık 270 bar buhar, 2,7 km derinliğinde küresel bir okyanusa denk.', 'Basınç yüksek olduğu için su 200 °C\'nin üzerinde sıvı kalabildi.', 'Jack Hills zirkonları 4,4 milyar yıl önce sıvı su olduğunu gösteriyor.'],
+  },
+  ocean: {
+    beats: ['Gezegenin neredeyse tamamı bir okyanus. Karalar yalnızca volkanik adalar.',
+      'Sıvı demir çekirdekteki akıntılar bir manyetik kalkan oluşturuyor.',
+      'Geç Ağır Bombardıman sırasında gökten yeniden ateş yağıyor.'],
+    facts: ['Kıtasal kabuk bugünkünün onda birinden azdı.', 'Manyetik alan, güneş rüzgârının atmosferi aşındırmasını engelliyor.', 'Ay\'daki büyük havzaların çoğu bu dönemde oluştu.'],
+  },
+  archean: {
+    beats: ['Arkeen\'in kıyısında gökyüzü turuncu. Metan pusu Güneş\'i soluklaştırıyor.',
+      'Güneş bugünkünden dörtte bir daha sönük, ama sera gazları okyanusları sıvı tutuyor.',
+      'Sığ sularda ilk mikroplar katman katman stromatolitler örüyor ve oksijen üretiyor.'],
+    facts: ['Bir gün 12–14 saat; Ay bugünkünden belirgin şekilde büyük görünüyor.', 'Atmosferde serbest oksijen yok denecek kadar az.', 'Levha tektoniği bu dönemde yaygınlaştı.'],
+  },
+  oxygen: {
+    beats: ['Biriken oksijen sonunda atmosferi değiştiriyor.',
+      'Metan pusu dağılıyor, gökyüzü maviye dönüyor ve ozon tabakası oluşuyor.',
+      'Sonra gezegen, kutuplardan ekvatora kadar buzla kaplanıyor.'],
+    facts: ['Okyanuslardaki demir pas olup çöktü: bantlı demir oluşumları.', 'Ozon tabakası Güneş\'in UV ışınımını süzmeye başladı.', 'Kartopu Dünya\'yı volkanlardan biriken CO₂ sona erdirdi.'],
+  },
+  today: {
+    beats: ['Kambriyen\'de yaşam patlıyor; bitkiler karaya çıkıyor ve kıyıları ormanlar kaplıyor.',
+      'Altmış altı milyon yıl önce, on kilometrelik bir asteroit dinozor çağını bitiriyor.',
+      'Ve bugün: dört buçuk milyar yıllık yolculuğun sonunda, yaşam barındırdığını bildiğimiz tek gezegen.'],
+    t: [0.03, 0.55, 0.86],
+    facts: ['Son 541 milyon yılda beş büyük yok oluş yaşandı.', 'Pangea 335–175 milyon yıl önce tek bir süper kıtaydı.', 'Bir gün bugün 24 saat; Dünya\'nın dönüşü her yüzyılda ~1,8 ms yavaşlıyor.'],
+  },
+};
+
+// The physics and evidence behind each chapter. `v` returns a live value computed for the current age.
+const SCI = {
+  nebula: [
+    { h: 'Jeans kararsızlığı', c: 'M > M_J ∝ T^{3/2} ρ^{-1/2}', p: 'Soğuk ve yoğun bir bulut, kütlesi Jeans kütlesini aşınca kendi ağırlığı altında çöker.' },
+    { h: 'Serbest düşüş süresi', c: 't_ff = √(3π / 32Gρ)', p: 'Yoğunluğu ~10⁻¹⁹ kg/m³ olan bir bulut için yaklaşık 10⁵ yıl.' },
+    { h: 'Açısal momentum korunumu', c: 'L = m · v · r = sabit', p: 'Bulut küçüldükçe daha hızlı döner; bu yüzden bir diske yassılaşır.' },
+    { refs: ['Connelly ve ark. 2012, Science 338: 651 — en eski katıların Pb–Pb yaşı', 'Montmerle ve ark. 2006, Earth Moon Planets 98: 39'] },
+  ],
+  plan: [
+    { h: 'Kepler\'in üçüncü yasası', c: 'T² = 4π² a³ / GM', p: 'Simülasyondaki her gezegencik bu yasaya uyan yörüngelerde dolanır; yakındakiler daha hızlıdır.' },
+    { h: 'Karşılıklı kütleçekimi', c: 'F = G m₁ m₂ / r²', p: '180 cismin birbirini çekmesi yörüngeleri bozar, çarpışmalar ve birleşmeler başlar.' },
+    { h: 'Kar çizgisi', c: 'T(r) ≈ 280 K · (r / 1 AU)^{-1/2}', p: 'Su buzu ~150 K altında yoğunlaşır. İç Güneş Sistemi kayalık, dışı buzlu kaldı.' },
+    { refs: ['Safronov 1969, Gezegencik birikim teorisi', 'Kokubo ve Ida 1998, Icarus 131: 171 — oligarşik büyüme'] },
+  ],
+  accr: [
+    { h: 'Çarpışma ısınması', c: 'ΔT ≈ G M / (R · c_p)', p: 'Kütle büyüdükçe çarpan cisimler daha hızlı düşer; enerji ısıya dönüşür ve yüzey erir.' },
+    { h: 'Yüzey çekimi', c: 'g ∝ M^{1/3}  (yoğunluk sabitse)', v: age => `Şu an g ≈ ${nf1.format(9.81 * Math.cbrt(kf(KF.mass, age) / 100))} m/s²` },
+    { h: 'Alüminyum-26', c: '²⁶Al → ²⁶Mg,  t½ = 0,72 milyon yıl', p: 'Kısa ömürlü bu izotop, ilk birkaç milyon yılda gezegencikleri içeriden eritti.' },
+    { refs: ['Chambers 2004, EPSL 223: 241', 'Wetherill 1990, Annu. Rev. Earth Planet. Sci. 18: 205'] },
+  ],
+  iron: [
+    { h: 'Hafniyum–tungsten saati', c: '¹⁸²Hf → ¹⁸²W,  t½ = 8,9 milyon yıl', p: 'Hf kayada, W demirde kalır. Mantodaki fazladan ¹⁸²W, çekirdeğin ~30 milyon yılda ayrıştığını gösterir.' },
+    { h: 'Stokes çökelme hızı', c: 'v = 2 Δρ g r² / 9η', p: 'Magma okyanusunun düşük viskozitesinde santimetrelik demir damlaları saniyede metrelerce hızla çöker.' },
+    { h: 'Şu anki çekirdek', c: 'r_çekirdek', v: age => `≈ ${nf0.format(Math.round(kf(KF.coreR, age) * kf(KF.radius, age) * 6371 / 10) * 10)} km` },
+    { refs: ['Kleine ve ark. 2009, GCA 73: 5150', 'Rubie ve ark. 2015, Treatise on Geophysics 9: 43'] },
+  ],
+  theia: [
+    { h: 'Çarpışma enerjisi', c: 'E = ½ m v²', v: () => `m ≈ 6,4×10²³ kg, v ≈ 9,3 km/s → E ≈ ${sci10(E_THEIA)} J` },
+    { h: 'Simülasyon', c: 'a = −GM r̂ / r²  +  çarpışmalı sönümleme', p: 'Theia ve fırlatılan manto 820 parçacıkla hesaplanır. Dünya\'ya çarpanlar yutulur, yörüngeye girenler diski oluşturur.' },
+    { h: 'Kanıt: izotop ikizliği', c: 'Δ¹⁷O (Ay − Dünya) ≈ 0', p: 'Apollo örneklerinin oksijen izotopları Dünya\'yla neredeyse aynı. Ay\'ın küçük demir çekirdeği de dev çarpışmayı destekliyor.' },
+    { refs: ['Hartmann ve Davis 1975, Icarus 24: 504', 'Canup ve Asphaug 2001, Nature 412: 708', 'Young ve ark. 2016, Science 351: 493'] },
+  ],
+  moon: [
+    { h: 'Roche sınırı', c: 'd = 2,44 R⊕ (ρ⊕ / ρ☾)^{1/3}', v: () => `= 2,44 × (5,51 / 3,34)^{1/3} ≈ ${nf2.format(ROCHE_R)} R⊕` },
+    { h: 'Gelgit kuvveti', c: 'F_gelgit ∝ M☾ / d³', v: () => `25.000 km'de bugünkünün ≈ ${nf0.format(Math.round(tideX(25000) / 100) * 100)} katı` },
+    { h: 'Ay magma okyanusu', c: 'Anortozit kabuk', p: 'Apollo astronotlarının getirdiği beyaz anortozit kayalar, Ay\'ın da erimiş bir yüzeyle doğduğunu gösterir.' },
+    { refs: ['Ida, Canup ve Stewart 1997, Nature 389: 353', 'Kokubo, Ida ve Makino 2000, Icarus 148: 419', 'Salmon ve Canup 2012, ApJ 760: 83'] },
+  ],
+  magma: [
+    { h: 'Işınımla soğuma', c: 'F = ε σ T⁴', v: age => { const T = kf(KF.temp, age) + 273.15; return `T = ${nf0.format(T)} K → F ≈ ${nf1.format(SIGMA * T ** 4 / 1e6)} MW/m²`; } },
+    { h: 'Ay\'ın açısal boyutu', c: 'θ = 2 · arctan(R☾ / d)', v: age => `≈ ${nf1.format(moonDeg(kf(KF.moonKm, age)))}° (bugün 0,52°)` },
+    { refs: ['Elkins-Tanton 2012, Annu. Rev. Earth Planet. Sci. 40: 113', 'Zahnle ve ark. 2007, Space Sci. Rev. 129: 35'] },
+  ],
+  cool: [
+    { h: 'Neden dipten katılaşır?', c: 'dT_solidus/dP  >  dT_adyabat/dP', p: 'Erime sıcaklığı basınçla adyabattan daha hızlı yükselir; kristaller önce derinde oluşur.' },
+    { h: 'Konveksiyon ölçütü', c: 'Ra = ρ g α ΔT d³ / (κ η)  ≫  10³', p: 'Manto katı olsa da milyonlarca yılda akar. Rayleigh sayısı ~10⁷–10⁸, konveksiyon kaçınılmaz.' },
+    { h: 'Radyojenik ısı', c: 'H(t) = Σ H₀ · exp(λ t)', v: age => `≈ ${nf0.format(radHeat(age))} TW (bugün ${nf1.format(radHeat(0))} TW)` },
+    { refs: ['Solomatov 2000, Origin of the Earth and Moon: 323', 'Elkins-Tanton 2008, EPSL 271: 181'] },
+  ],
+  rain: [
+    { h: 'Clausius–Clapeyron', c: 'dP/dT = L / (T Δv)', p: 'Doymuş buhar basıncı sıcaklıkla üstel değişir; atmosfer soğudukça buhar yoğunlaşıp yağar.' },
+    { h: 'Buhardan okyanusa', c: '1 bar su buharı ≈ 10 m su', v: age => `Şu an atmosfer ≈ ${nf0.format(kf(KF.pres, age))} bar` },
+    { h: 'Kanıt: Jack Hills zirkonları', c: 'δ¹⁸O ≈ +5–7 ‰', p: 'Batı Avustralya\'daki 4,4 milyar yaşındaki zirkonların ağır oksijeni, sıvı suyla etkileşmiş kabuğu gösterir.' },
+    { refs: ['Wilde ve ark. 2001, Nature 409: 175', 'Zahnle ve ark. 2010, Cold Spring Harb. Perspect. Biol. 2: a004895'] },
+  ],
+  ocean: [
+    { h: 'Jeodinamo', c: '∂B/∂t = ∇×(v×B) + η∇²B', p: 'Sıvı demirin konveksiyonu manyetik alanı sürekli yeniden üretir. Zirkonlardaki kalıntı mıknatıslanma ~4,2 milyar yıl önce bir alan olduğunu ima ediyor (tartışmalı).' },
+    { h: 'Sönük genç Güneş', c: 'L / L₀ = [1 + ⅖ (1 − t/t₀)]⁻¹', v: age => `Şu an Güneş bugünkünün %${nf0.format(solarL(age) * 100)}'i kadar parlak` },
+    { h: 'Geç Ağır Bombardıman', c: 'Ay çarpma eriyiği yaşları ≈ 3,9 milyar yıl', p: 'Apollo örneklerinde yığılan yaşlar bir çarpışma zirvesine işaret ediyor; bazı araştırmacılar bunun örnekleme etkisi olduğunu savunuyor.' },
+    { refs: ['Tarduno ve ark. 2015, Science 349: 521', 'Gough 1981, Solar Physics 74: 21', 'Boehnke ve Harrison 2016, PNAS 113: 10802'] },
+  ],
+  archean: [
+    { h: 'Işınım dengesi sıcaklığı', c: 'T_e = [S (1 − A) / 4σ]^{1/4}', v: age => `S = ${nf0.format(S0 * solarL(age))} W/m², A = ${nf2.format(kf(ALBEDO, age))} → T_e ≈ ${nf0.format(teff(age))} °C` },
+    { h: 'Sera ısınması', c: 'ΔT = T_yüzey − T_e', v: age => `≈ +${nf0.format(kf(KF.temp, age) - teff(age))} °C (bugün +33 °C)` },
+    { h: 'Kanıt: kükürt izotopları', c: 'Δ³³S ≠ 0  (kütleden bağımsız ayrışma)', p: 'Yalnızca oksijensiz, ozonsuz bir atmosferde UV ışığı bu izi bırakır. İz 2,4 milyar yıl önce kaybolur.' },
+    { refs: ['Sagan ve Mullen 1972, Science 177: 52', 'Farquhar ve ark. 2000, Science 289: 756', 'Allwood ve ark. 2006, Nature 441: 714'] },
+  ],
+  oxygen: [
+    { h: 'Fotosentez', c: '6CO₂ + 6H₂O + ışık → C₆H₁₂O₆ + 6O₂', p: 'Siyanobakterilerin ürettiği oksijen önce okyanustaki demiri paslandırdı, sonra atmosferde birikti.' },
+    { h: 'Ozon (Chapman döngüsü)', c: 'O₂ + UV → 2O,   O + O₂ → O₃', p: 'Ozon tabakası karada yaşamın önünü açan UV kalkanıdır.' },
+    { h: 'Buz–albedo geri beslemesi', c: 'A: 0,30 → 0,60', v: () => `T_e ${nf0.format(teff(1000))} °C'den ${nf0.format(teff(680))} °C'ye düşer` },
+    { refs: ['Lyons, Reinhard ve Planavsky 2014, Nature 506: 307', 'Hoffman ve ark. 1998, Science 281: 1342'] },
+  ],
+  today: [
+    { h: 'Chicxulub çarpması', c: 'E = ½ m v²', v: () => `10 km çap, 20 km/s → E ≈ ${sci10(E_CHICX)} J` },
+    { h: 'Kanıt: iridyum anomalisi', c: 'K–Pg sınırında Ir ≈ 30× artış', p: 'Dünya genelinde ince bir kil tabakası; Yucatán\'daki 180 km\'lik krater 1991\'de tanımlandı.' },
+    { h: 'Milankoviç döngüleri', c: '~100.000 · 41.000 · 23.000 yıl', p: 'Yörünge dışmerkezliği, eksen eğikliği ve devinim buzul çağlarının ritmini belirler.' },
+    { refs: ['Alvarez ve ark. 1980, Science 208: 1095', 'Hildebrand ve ark. 1991, Geology 19: 867', 'Schulte ve ark. 2010, Science 327: 1214'] },
+  ],
+};
+
 /* ================================================================ UI */
 const $ = id => document.getElementById(id);
 const ui = {
-  era: $('era'), ageNum: $('ageNum'), ageUnit: $('ageUnit'), since: $('since'),
-  chapter: $('chapter'), chapterSpan: $('chapterSpan'), desc: $('desc'), more: $('more'),
-  rTemp: $('rTemp'), rPres: $('rPres'), rMass: $('rMass'), rDay: $('rDay'), rMoon: $('rMoon'), rCore: $('rCore'), rAtmo: $('rAtmo'),
-  play: $('play'), icoPlay: $('icoPlay'), icoPause: $('icoPause'), restart: $('restart'), speed: $('speed'),
-  timeline: $('timeline'), segs: $('segs'), marks: $('marks'), playhead: $('playhead'), toast: $('toast'),
+  era: $('era'), chapNo: $('chapNo'), ageNum: $('ageNum'), ageUnit: $('ageUnit'), since: $('since'),
+  chapter: $('chapter'), chapterSpan: $('chapterSpan'), desc: $('desc'), facts: $('facts'), sub: $('sub'),
+  rTemp: $('rTemp'), rPres: $('rPres'), rSun: $('rSun'), rGh: $('rGh'), rDay: $('rDay'), rMoon: $('rMoon'),
+  rHeat: $('rHeat'), rCore: $('rCore'), rMass: $('rMass'), rO2: $('rO2'), rAtmo: $('rAtmo'),
+  kTemp: $('kTemp'), kDay: $('kDay'), kMoon: $('kMoon'),
+  play: $('play'), icoPlay: $('icoPlay'), icoPause: $('icoPause'), restart: $('restart'), speed: $('speed'), narr: $('narr'), snd: $('snd'),
+  timeline: $('timeline'), segs: $('segs'), marks: $('marks'), playhead: $('playhead'), event: $('event'),
   views: [...document.querySelectorAll('.views button')],
+  sheet: $('sheet'), grip: $('grip'), tabs: [...document.querySelectorAll('.tabs [role=tab]')],
+  card: $('card'), cardNo: $('cardNo'), cardTitle: $('cardTitle'), cardDate: $('cardDate'),
+  intro: $('intro'), introNote: $('introNote'), sciBody: $('sciBody'),
+  chips: $('chips'), chartTitle: $('chartTitle'), chartBox: $('chartBox'), chartNote: $('chartNote'), legend: $('legend'), tableWrap: $('tableWrap'),
 };
 const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
 const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const nf3 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII'];
 
 function fmtAge(a) {
   if (a < 0.0005) return ['Bugün', ''];
@@ -2127,14 +2476,35 @@ function impactHours(T) {
   const h0 = (SCENES[SI.theia].dur - IMP_C) * 1.8;
   return Math.pow(10, lerp(Math.log10(h0), Math.log10(100 * 8766), u));
 }
+function sceneDates(s) {
+  if (s.key === 'theia') return '4,511 milyar yıl önce · birkaç saat';
+  if (s.key === 'moon') return 'Çarpışmadan sonraki aylar ve yıllar';
+  if (s.a1 === 0) return '541 milyon yıl önce – bugün';
+  const f = a => a >= 1000 ? nf3.format(a / 1000) : nf0.format(a);
+  const unit = s.a1 >= 1000 ? 'milyar' : 'milyon';
+  return `${f(s.a0)} – ${f(s.a1)} ${unit} yıl önce`;
+}
+
+// beat timing: three narration lines per chapter
+for (const s of SCENES) {
+  const st = STORY[s.key];
+  s.beats = st.beats; s.facts = st.facts;
+  s.bt = (st.t || [0.03, 0.36, 0.68]).map(u => s.t0 + u * s.dur);
+}
+const BEATS = [];
+SCENES.forEach((s, i) => s.beats.forEach((text, k) => BEATS.push({ t: s.bt[k], text, i })));
+function beatAt(T) { let b = -1; for (let k = 0; k < BEATS.length; k++) if (BEATS[k].t <= T) b = k; return b; }
 
 SCENES.forEach(s => {
   const seg = document.createElement('div');
   seg.className = 'seg';
   seg.style.flex = s.dur + ' 1 0';
-  seg.innerHTML = `<div class="bar"><div class="fill"></div></div><span class="lbl">${s.short}</span>`;
+  const bar = document.createElement('div'); bar.className = 'bar';
+  const fill = document.createElement('div'); fill.className = 'fill'; bar.appendChild(fill);
+  const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = s.short;
+  seg.append(bar, lbl);
   ui.segs.appendChild(seg);
-  s.el = seg; s.fill = seg.querySelector('.fill');
+  s.el = seg; s.fill = fill;
 });
 const GAP = 3;
 function timeToPx(T) {
@@ -2163,38 +2533,56 @@ function placeMarks() {
   }
 }
 
-let T = 0, playing = !reduceMotion, speed = 1, lastScene = -1, toastTimer = 0, jumped = true, cache = {};
+let T = 0, playing = false, speed = 1, lastScene = -1, lastBeat = -2, evTimer = 0, jumped = true, cache = {};
 function setText(el, key, v) { if (cache[key] !== v) { cache[key] = v; el.textContent = v; } }
+function setDd(el, key, main, small) {
+  const v = main + '|' + (small || '');
+  if (cache[key] === v) return;
+  cache[key] = v;
+  el.textContent = main;
+  if (small) { const s = document.createElement('small'); s.textContent = small; el.appendChild(s); }
+}
 const fmtTemp = t => nf0.format(Math.round(t / 5) * 5) + ' °C';
 const fmtPres = p => (p >= 10 ? nf0.format(Math.round(p / 10) * 10) : nf1.format(p)) + ' bar';
+const fmtPal = p => p < 1e-4 ? 'eser miktar' : p < 0.01 ? `%${nf2.format(p * 100)} bugünün` : p < 1.05 ? `%${nf0.format(p * 100)} bugünün` : `bugünün ${nf1.format(p)} katı`;
 
 function readouts(age, i, moonBody) {
   const k = SCENES[i].key;
   const imp = k === 'theia' || k === 'moon';
   const post = imp ? (T - SCENES[SI.theia].t0) - IMP_C : 0;
   const coreKm = r => nf0.format(Math.round(r * 6371 / 10) * 10);
-  if (i <= 1) return { t: '−200…1.500 °C', p: '—', m: i === 0 ? '—' : '%' + nf1.format(kf(KF.mass, age)), d: '—', mo: '—', c: '—', a: atmoText(age) };
+  const L = solarL(age), heat = radHeat(age);
+  const base = {
+    sun: [age > 4565 ? 'ön-Güneş' : `%${nf0.format(L * 100)}`, age > 4565 ? 'henüz anakol yıldızı değil' : 'bugünkü parlaklığın'],
+    heat: [`${nf0.format(heat)} TW`, `bugün ${nf1.format(radHeat(0))} TW`],
+  };
+  if (i <= 1) return { ...base, t: ['−200…1.500 °C', 'diskin dışı ile içi'], p: ['—'], m: [i === 0 ? '—' : '%' + nf1.format(kf(KF.mass, age))], d: ['—'], mo: ['—'], c: ['—'], o2: ['—'], gh: ['—'], a: atmoText(age) };
   if (imp) {
     const pre = post < 0;
-    const mpct = pre ? 88 : lerp(88, 99, sstep(0, 3, post));
     return {
-      t: pre ? fmtTemp(2000) : fmtTemp(lerp(6000, 2500, sstep(0, 30, post))),
-      p: pre ? '—' : 'kaya buharı',
-      m: '%' + nf0.format(mpct),
-      d: pre ? '—' : '~5 saat',
-      mo: moonBody ? (post > 26 ? '~25.000 km' : `%${nf0.format(clamp(moonBody.m / MOON_REF) * 100)} toplandı`) : (pre ? '—' : 'disk'),
-      c: pre ? coreKm(kf(KF.coreR, PRE) * 0.93) + ' km' : (post < 8 ? 'Theia çekirdeği karışıyor' : coreKm(0.546) + ' km'),
+      ...base,
+      t: [pre ? fmtTemp(2000) : fmtTemp(lerp(6000, 2500, sstep(0, 30, post)))],
+      p: [pre ? '—' : 'kaya buharı'],
+      m: ['%' + nf0.format(pre ? 88 : lerp(88, 99, sstep(0, 3, post)))],
+      d: [pre ? '—' : '~5 saat'],
+      mo: moonBody ? (post > 26 ? ['~25.000 km', `gelgit ×${nf0.format(Math.round(tideX(25000) / 100) * 100)}`] : [`%${nf0.format(clamp(moonBody.m / MOON_REF) * 100)}`, 'Ay toplanıyor']) : [pre ? '—' : 'enkaz diski'],
+      c: [pre ? coreKm(kf(KF.coreR, PRE) * 0.93) + ' km' : coreKm(0.546) + ' km', pre ? '' : 'Theia çekirdeği karışıyor'],
+      o2: ['—'], gh: ['—', 'iç ısı baskın'],
       a: pre ? 'Kaya buharı, hidrojen' : 'Silikat buharı',
     };
   }
-  const R = kf(KF.radius, age), inner = kf(KF.innerR, age);
+  const R = kf(KF.radius, age), inner = kf(KF.innerR, age), Ts = kf(KF.temp, age), km = kf(KF.moonKm, age);
+  const post4511 = age < 4511;
   return {
-    t: fmtTemp(kf(KF.temp, age)),
-    p: age < 4511 ? fmtPres(kf(KF.pres, age)) : '—',
-    m: '%' + (kf(KF.mass, age) < 10 ? nf1 : nf0).format(kf(KF.mass, age)),
-    d: age < 4511 ? nf1.format(kf(KF.day, age)) + ' saat' : '—',
-    mo: age < 4511 ? nf0.format(Math.round(kf(KF.moonKm, age) / 100) * 100) + ' km' : '—',
-    c: coreKm(kf(KF.coreR, age) * R) + (inner > 0.005 ? ' / ' + coreKm(inner) : '') + ' km',
+    ...base,
+    t: [fmtTemp(Ts)],
+    p: [post4511 ? fmtPres(kf(KF.pres, age)) : '—', age < 4430 ? `CO₂ ${co2bar(age) < 0.01 ? nf0.format(co2bar(age) * 1e6) + ' ppm' : fmtPres(co2bar(age))}` : ''],
+    gh: age < 4430 ? [`${Ts - teff(age) >= 0 ? '+' : '−'}${nf0.format(Math.abs(Ts - teff(age)))} °C`, `sera olmadan ${nf0.format(teff(age))} °C`] : ['—', 'iç ısı baskın'],
+    m: ['%' + (kf(KF.mass, age) < 10 ? nf1 : nf0).format(kf(KF.mass, age))],
+    d: [post4511 ? nf1.format(kf(KF.day, age)) + ' saat' : '—'],
+    mo: post4511 ? [nf0.format(Math.round(km / 100) * 100) + ' km', `gelgit ×${nf1.format(tideX(km))} · ${nf1.format(moonDeg(km))}°`] : ['—'],
+    c: [coreKm(kf(KF.coreR, age) * R) + ' km', inner > 0.005 ? `iç çekirdek ${coreKm(inner)} km` : (age > 4511 ? 'büyüyor' : 'tamamen sıvı')],
+    o2: post4511 && age < 4430 ? [fmtPal(o2pal(age))] : ['—'],
     a: atmoText(age),
   };
 }
@@ -2211,18 +2599,50 @@ function updateViewButtons(i) {
   }
 }
 
+function renderScience(s) {
+  const box = ui.sciBody;
+  box.innerHTML = '';
+  for (const item of SCI[s.key]) {
+    if (item.refs) {
+      const h = document.createElement('p'); h.className = 'h3'; h.textContent = 'Kaynaklar';
+      const ol = document.createElement('ol'); ol.className = 'refs';
+      for (const r of item.refs) { const li = document.createElement('li'); li.textContent = r; ol.appendChild(li); }
+      box.append(h, ol);
+      continue;
+    }
+    const d = document.createElement('div'); d.className = 'eq';
+    const h = document.createElement('h4'); h.textContent = item.h;
+    const c = document.createElement('code'); c.textContent = item.c.replace(/\^\{([^}]*)\}/g, (_, e) => sup(e).replace(/\//g, 'ᐟ'));
+    d.append(h, c);
+    if (item.p) { const p = document.createElement('p'); p.textContent = item.p; d.appendChild(p); }
+    if (item.v) { const o = document.createElement('output'); o.dataset.live = '1'; item.out = o; d.appendChild(o); }
+    box.appendChild(d);
+  }
+}
+function updateScienceLive(s, age) {
+  for (const item of SCI[s.key]) if (item.v && item.out) {
+    const v = item.v(age);
+    if (item.out.textContent !== v) item.out.textContent = v;
+  }
+}
+
 function updateUI(age, moonBody) {
   const i = sceneAt(T), s = SCENES[i];
   if (i !== lastScene) {
     lastScene = i;
     document.documentElement.style.setProperty('--era', s.color);
     ui.era.textContent = s.name;
+    ui.chapNo.textContent = `Bölüm ${ROMAN[i]}`;
     ui.desc.textContent = s.text;
+    ui.facts.innerHTML = '';
+    for (const f of s.facts) { const li = document.createElement('li'); li.textContent = f; ui.facts.appendChild(li); }
     ui.chapter.textContent = `Bölüm ${i + 1} / ${SCENES.length}`;
-    ui.chapterSpan.textContent = s.a0 === s.a1 || s.key === 'moon' ? 'Saatler – yüzyıllar' : s.a1 === 0 ? `${nf0.format(s.a0)} My – bugün` : `${nf0.format(s.a0)}–${nf0.format(s.a1)} My`;
+    ui.chapterSpan.textContent = sceneDates(s);
     SCENES.forEach((x, k) => x.el.classList.toggle('on', k === i));
     updateViewButtons(i);
+    renderScience(s);
   }
+  if (!panelHidden('p-sci')) updateScienceLive(s, age);
   const [num, unit] = fmtAge(age);
   setText(ui.ageNum, 'an', num); setText(ui.ageUnit, 'au', unit);
   if (s.key === 'theia' || s.key === 'moon') {
@@ -2230,8 +2650,10 @@ function updateUI(age, moonBody) {
     setText(ui.since, 'si', h < 0 ? 'Çarpışmaya kalan: ' + fmtHours(-h) : 'Çarpışmadan bu yana: ' + fmtHours(h));
   } else setText(ui.since, 'si', 'Güneş Sistemi\'nin yaşı: ' + fmtSpan(SCENES[0].a0 - age));
   const R = readouts(age, i, moonBody);
-  setText(ui.rTemp, 'rt', R.t); setText(ui.rPres, 'rp', R.p); setText(ui.rMass, 'rm', R.m);
-  setText(ui.rDay, 'rd', R.d); setText(ui.rMoon, 'rmo', R.mo); setText(ui.rCore, 'rc', R.c); setText(ui.rAtmo, 'ra', R.a);
+  setDd(ui.rTemp, 'rt', ...R.t); setDd(ui.rPres, 'rp', ...R.p); setDd(ui.rSun, 'rs', ...R.sun); setDd(ui.rGh, 'rg', ...R.gh);
+  setDd(ui.rDay, 'rd', ...R.d); setDd(ui.rMoon, 'rmo', ...R.mo); setDd(ui.rHeat, 'rh', ...R.heat); setDd(ui.rCore, 'rc', ...R.c);
+  setDd(ui.rMass, 'rm', ...R.m); setDd(ui.rO2, 'ro', ...R.o2); setText(ui.rAtmo, 'ra', R.a);
+  setText(ui.kTemp, 'kt', R.t[0]); setText(ui.kDay, 'kd', R.d[0]); setText(ui.kMoon, 'km', R.mo[0]);
   for (let k = 0; k < SCENES.length; k++) {
     const w = (clamp((T - SCENES[k].t0) / SCENES[k].dur) * 100).toFixed(2) + '%';
     if (cache['f' + k] !== w) { cache['f' + k] = w; SCENES[k].fill.style.width = w; }
@@ -2240,36 +2662,274 @@ function updateUI(age, moonBody) {
   ui.timeline.setAttribute('aria-valuenow', Math.round(T / TOTAL * 100));
   ui.timeline.setAttribute('aria-valuetext', s.name + ', ' + num + ' ' + unit);
   for (const ev of EVENTS) if (ev.el) ev.el.classList.toggle('past', ev.t <= T);
+  // narration subtitle follows the beat under the playhead
+  const b = beatAt(T);
+  if (b !== lastBeat) {
+    lastBeat = b;
+    ui.sub.textContent = b >= 0 ? BEATS[b].text : '';
+    if (b >= 0 && playing && !jumped) speak(BEATS[b].text);
+  }
+  if (!panelHidden('p-data')) chartMarker(age);
 }
 
-function showToast(ev) {
-  ui.toast.innerHTML = '';
-  const i = document.createElement('i');
-  if (ev.tag) i.textContent = ev.tag;
-  else { const [n, u] = fmtAge(ev.age); i.textContent = n + ' ' + u.replace(' önce', ''); }
-  ui.toast.append(i, document.createTextNode(ev.text));
-  ui.toast.hidden = false;
-  ui.toast.style.animation = 'none'; void ui.toast.offsetWidth; ui.toast.style.animation = '';
-  toastTimer = 4.2;
+function showEvent(ev) {
+  ui.event.innerHTML = '';
+  const s = document.createElement('small');
+  if (ev.tag) s.textContent = ev.tag;
+  else { const [n, u] = fmtAge(ev.age); s.textContent = n + ' ' + u; }
+  ui.event.append(s, document.createTextNode(ev.text));
+  ui.event.hidden = false;
+  ui.event.style.animation = 'none'; void ui.event.offsetWidth; ui.event.style.animation = '';
+  evTimer = 5;
 }
 
+/* ---------- chapter title cards */
+let cardTimer = 0;
+function showCard(i) {
+  const s = SCENES[i];
+  ui.cardNo.textContent = `Bölüm ${ROMAN[i]}`;
+  ui.cardTitle.textContent = s.name;
+  ui.cardDate.textContent = sceneDates(s);
+  ui.card.hidden = false;
+  ui.card.style.animation = 'none'; void ui.card.offsetWidth; ui.card.style.animation = '';
+  document.body.classList.add('cinema');
+  cardTimer = reduceMotion ? 2.4 : 3.6;
+}
+function hideCard() { ui.card.hidden = true; document.body.classList.remove('cinema'); cardTimer = 0; }
+
+/* ---------- narrator (speech synthesis) */
+const NARR = { on: false, voice: null, ok: 'speechSynthesis' in window };
+function pickVoice() {
+  if (!NARR.ok) return;
+  const vs = speechSynthesis.getVoices();
+  NARR.voice = vs.find(v => /^tr(-|_|$)/i.test(v.lang)) || null;
+}
+if (NARR.ok) { pickVoice(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', pickVoice); }
+function speak(text) {
+  if (!NARR.on || !NARR.ok) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'tr-TR'; if (NARR.voice) u.voice = NARR.voice;
+    u.rate = 0.96; u.pitch = 0.92;
+    speechSynthesis.speak(u);
+  } catch (e) { /* speech is optional */ }
+}
+const narratorBusy = () => NARR.on && NARR.ok && speechSynthesis.speaking;
+function setNarr(on) {
+  NARR.on = on && NARR.ok;
+  ui.narr.setAttribute('aria-pressed', String(NARR.on));
+  ui.narr.setAttribute('aria-label', NARR.on ? 'Sesli anlatımı kapat' : 'Sesli anlatımı aç');
+  if (!NARR.on && NARR.ok) speechSynthesis.cancel();
+}
+
+/* ---------- ambient sound (Web Audio, generated) */
+const AU = { on: false, c: null };
+function audioInit() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return false;
+  const c = new AC(), master = c.createGain();
+  master.gain.value = 0; master.connect(c.destination);
+  const noiseBuf = (brown) => {
+    const b = c.createBuffer(1, c.sampleRate * 3, c.sampleRate), d = b.getChannelData(0);
+    let last = 0;
+    for (let k = 0; k < d.length; k++) { const w = Math.random() * 2 - 1; if (brown) { last = (last + 0.02 * w) / 1.02; d[k] = last * 3.5; } else d[k] = w * 0.5; }
+    return b;
+  };
+  const loop = (buf, filt, f) => { const s = c.createBufferSource(); s.buffer = buf; s.loop = true; const fl = c.createBiquadFilter(); fl.type = filt; fl.frequency.value = f; const g = c.createGain(); g.gain.value = 0; s.connect(fl); fl.connect(g); g.connect(master); s.start(); return { g, fl }; };
+  const o1 = c.createOscillator(), o2 = c.createOscillator(), dg = c.createGain(), dlp = c.createBiquadFilter();
+  o1.type = 'sine'; o2.type = 'triangle'; o1.frequency.value = 55; o2.frequency.value = 82.4; o2.detune.value = 8;
+  dg.gain.value = 0.05; dlp.type = 'lowpass'; dlp.frequency.value = 380;
+  o1.connect(dg); o2.connect(dg); dg.connect(dlp); dlp.connect(master); o1.start(); o2.start();
+  const brown = noiseBuf(true), white = noiseBuf(false);
+  Object.assign(AU, { c, master, o1, o2, dg, rumble: loop(brown, 'lowpass', 220), rain: loop(white, 'highpass', 1400), wind: loop(brown, 'bandpass', 500), brown });
+  return true;
+}
+function setSound(on) {
+  if (on && !AU.c && !audioInit()) on = false;
+  AU.on = on;
+  if (AU.c) { if (on) AU.c.resume(); AU.master.gain.setTargetAtTime(on ? 0.9 : 0, AU.c.currentTime, 0.4); }
+  ui.snd.setAttribute('aria-pressed', String(on));
+  ui.snd.setAttribute('aria-label', on ? 'Ortam sesini kapat' : 'Ortam sesini aç');
+}
+function audioUpdate(age, key, shown) {
+  if (!AU.on || !AU.c) return;
+  const t = AU.c.currentTime, mg = kf(KF.magma, age), rain = kf(KF.rain, age);
+  const space = shown === '2d' || shown === 'interior';
+  const base = key === 'nebula' || key === 'plan' ? 49 : mg > 0.5 ? 41 : age > 2400 ? 55 : 65;
+  AU.o1.frequency.setTargetAtTime(base, t, 2); AU.o2.frequency.setTargetAtTime(base * 1.498, t, 2);
+  AU.rumble.g.gain.setTargetAtTime(0.05 + mg * 0.25 + (key === 'theia' || key === 'moon' ? 0.2 : 0), t, 1);
+  AU.rain.g.gain.setTargetAtTime(shown === 'surface' ? rain * 0.16 : 0, t, 0.8);
+  AU.wind.g.gain.setTargetAtTime(shown === 'surface' ? 0.12 : space ? 0.02 : 0.04, t, 1.2);
+}
+function audioBoom(power) {
+  if (!AU.on || !AU.c) return;
+  const c = AU.c, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime;
+  s.buffer = AU.brown; f.type = 'lowpass'; f.frequency.value = 160 + 120 * power;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.5 + 0.9 * power, t + 0.04); g.gain.exponentialRampToValueAtTime(0.001, t + 1 + 2.5 * power);
+  s.connect(f); f.connect(g); g.connect(AU.master); s.start(t); s.stop(t + 4);
+}
+
+/* ---------- sheet and tabs */
+const panelHidden = id => $(id).hidden || (window.innerWidth <= 860 && !ui.sheet.classList.contains('open'));
+function setSheet(open) {
+  ui.sheet.classList.toggle('open', open);
+  ui.grip.setAttribute('aria-expanded', String(open));
+  ui.grip.setAttribute('aria-label', open ? 'Paneli kapat' : 'Paneli aç');
+  if (open && !$('p-data').hidden) drawChart();
+}
+function selectTab(tab) {
+  for (const t of ui.tabs) {
+    const on = t === tab;
+    t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+    $(t.getAttribute('aria-controls')).hidden = !on;
+  }
+  if (tab.id === 'tab-data') drawChart();
+  if (tab.id === 'tab-sci') updateScienceLive(SCENES[sceneAt(T)], ageAt(T));
+}
+ui.grip.addEventListener('click', () => setSheet(!ui.sheet.classList.contains('open')));
+ui.tabs.forEach((t, k) => {
+  t.addEventListener('click', () => { selectTab(t); if (window.innerWidth <= 860) setSheet(true); });
+  t.addEventListener('keydown', e => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!d) return;
+    const n = ui.tabs[(k + d + ui.tabs.length) % ui.tabs.length];
+    n.focus(); selectTab(n); e.preventDefault();
+  });
+});
+
+/* ---------- chart: one variable across Earth history */
+const SERIES = [
+  { id: 'temp', label: 'Sıcaklık', title: 'Yüzey sıcaklığı ve sera etkisi olmasaydı beklenen sıcaklık', unit: '°C', from: 4400,
+    lines: [{ name: 'Yüzey sıcaklığı', col: 'var(--series-2)', f: a => kf(KF.temp, a) }, { name: 'Sera etkisi olmadan', col: 'var(--series-1)', f: teff }],
+    note: 'İki çizgi arasındaki fark sera etkisidir. Güneş çok daha sönükken okyanusların donmamış olması "sönük genç Güneş paradoksu" olarak bilinir. Kartopu döneminde buz yansıtıcılığı dengeyi aşağı çeker.', fmt: v => nf0.format(v) + ' °C' },
+  { id: 'sun', label: 'Güneş', title: 'Güneş\'in parlaklığı (bugünkünün yüzdesi)', unit: '%', from: 4560,
+    lines: [{ name: 'Parlaklık', col: 'var(--series-1)', f: a => solarL(a) * 100 }], note: 'Gough (1981) modeli: Güneş çekirdeğinde helyum biriktikçe yavaşça parlaklaşır.', fmt: v => '%' + nf0.format(v) },
+  { id: 'o2', label: 'Oksijen', title: 'Atmosferdeki oksijen (bugünkü düzeye göre, log ölçek)', log: true, from: 4400,
+    lines: [{ name: 'O₂', col: 'var(--series-1)', f: o2pal }], note: 'Yaklaşık eğri; Lyons ve ark. (2014) derlemesine dayanır. 2,4 milyar yıl önceki sıçrama Büyük Oksidasyon Olayı.', fmt: v => v < 1e-4 ? sci10(v) + ' × bugün' : fmtPal(v) },
+  { id: 'co2', label: 'CO₂', title: 'Karbondioksit kısmi basıncı (bar, log ölçek)', log: true, from: 4430,
+    lines: [{ name: 'CO₂', col: 'var(--series-1)', f: co2bar }], note: 'Silikat ayrışması ve karbonat oluşumu CO₂\'yi atmosferden çekerek Güneş parlaklaştıkça iklimi dengeledi.', fmt: v => v < 0.01 ? nf0.format(v * 1e6) + ' ppm' : fmtPres(v) },
+  { id: 'heat', label: 'İç ısı', title: 'Radyoaktif bozunmanın ürettiği ısı (TW)', from: 4500,
+    lines: [{ name: 'Radyojenik ısı', col: 'var(--series-1)', f: radHeat }], note: '²³⁸U, ²³⁵U, ²³²Th ve ⁴⁰K bozunma sabitlerinden hesaplanır. Genç Dünya içeriden çok daha sıcaktı.', fmt: v => nf0.format(v) + ' TW' },
+  { id: 'day', label: 'Gün', title: 'Gün uzunluğu (saat)', from: 4500,
+    lines: [{ name: 'Gün', col: 'var(--series-1)', f: a => kf(KF.day, a) }], note: 'Ay\'ın gelgit sürtünmesi Dünya\'nın dönüşünü yavaşlatır, açısal momentum Ay\'a aktarılır.', fmt: v => nf1.format(v) + ' saat' },
+  { id: 'moon', label: 'Ay', title: 'Ay\'ın uzaklığı (bin km)', from: 4500,
+    lines: [{ name: 'Ay mesafesi', col: 'var(--series-1)', f: a => kf(KF.moonKm, a) / 1000 }], note: 'Bugün yılda ~3,8 cm uzaklaşıyor. 620 milyon yıllık gelgit ritmitleri o zamanki mesafeyi doğruluyor.', fmt: v => nf0.format(v * 1000) + ' km' },
+  { id: 'crust', label: 'Kıtalar', title: 'Kıtasal kabuk hacmi (bugünkünün yüzdesi)', from: 4400,
+    lines: [{ name: 'Kıtasal kabuk', col: 'var(--series-1)', f: a => kf(CRUST, a) }], note: 'Zirkon yaşlarından türetilen büyüme eğrisi (Belousova ve ark. 2010\'a göre yaklaşık).', fmt: v => '%' + nf0.format(v) },
+];
+let chartSel = SERIES[0], chartGeo = null;
+SERIES.forEach(s => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.setAttribute('role', 'radio'); b.textContent = s.label;
+  b.setAttribute('aria-checked', String(s === chartSel));
+  b.addEventListener('click', () => { chartSel = s; ui.chips.querySelectorAll('button').forEach(x => x.setAttribute('aria-checked', String(x === b))); drawChart(); });
+  ui.chips.appendChild(b);
+});
+const SVGNS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs, parent) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+function niceTicks(lo, hi, n) {
+  const span = hi - lo, step0 = span / n, mag = 10 ** Math.floor(Math.log10(step0));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || mag * 10;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10)); return out;
+}
+function drawChart() {
+  const S = chartSel, box = ui.chartBox;
+  const w = box.clientWidth || 300, h = 180, m = { l: 44, r: 12, t: 10, b: 24 };
+  ui.chartTitle.textContent = S.title; ui.chartNote.textContent = S.note;
+  ui.legend.innerHTML = '';
+  if (S.lines.length > 1) for (const ln of S.lines) { const sp = document.createElement('span'); const i = document.createElement('i'); i.style.background = ln.col; sp.append(i, document.createTextNode(ln.name)); ui.legend.appendChild(sp); }
+  const N = 240, ages = Array.from({ length: N }, (_, k) => S.from * (1 - k / (N - 1)));
+  const vals = S.lines.map(ln => ages.map(ln.f));
+  let lo = Math.min(...vals.flat()), hi = Math.max(...vals.flat());
+  const tf = S.log ? v => Math.log10(Math.max(v, 1e-9)) : v => v;
+  let ylo = tf(lo), yhi = tf(hi);
+  if (S.log) { ylo = Math.floor(ylo); yhi = Math.ceil(yhi); } else { const pad = (yhi - ylo) * 0.08 || 1; ylo -= pad; yhi += pad; }
+  const X = a => m.l + (1 - a / S.from) * (w - m.l - m.r), Y = v => m.t + (1 - (tf(v) - ylo) / (yhi - ylo)) * (h - m.t - m.b);
+  box.innerHTML = '';
+  const svg = el('svg', { viewBox: `0 0 ${w} ${h}`, role: 'img', 'aria-label': `${S.title}. Tabloda değerler var.` }, box);
+  svg.style.height = h + 'px';
+  const grid = el('g', {}, svg);
+  const yt = S.log ? Array.from({ length: yhi - ylo + 1 }, (_, k) => ylo + k).filter((_, k, a) => a.length <= 6 || k % 2 === 0) : niceTicks(ylo, yhi, 4);
+  for (const t of yt) {
+    const y = S.log ? m.t + (1 - (t - ylo) / (yhi - ylo)) * (h - m.t - m.b) : Y(t);
+    el('line', { x1: m.l, x2: w - m.r, y1: y, y2: y, stroke: 'rgba(160,170,200,0.14)', 'stroke-width': 1 }, grid);
+    const tx = el('text', { x: m.l - 6, y: y + 3, 'text-anchor': 'end' }, grid);
+    tx.textContent = S.log ? '10' + sup(t) : nf0.format(t);
+  }
+  for (let g = Math.floor(S.from / 1000); g >= 0; g--) {
+    const x = X(g * 1000);
+    const tx = el('text', { x, y: h - 6, 'text-anchor': 'middle' }, grid);
+    tx.textContent = g === 0 ? 'bugün' : g + ' Ga';
+  }
+  S.lines.forEach((ln, k) => {
+    const d = ages.map((a, j) => (j ? 'L' : 'M') + X(a).toFixed(1) + ' ' + Y(vals[k][j]).toFixed(1)).join('');
+    el('path', { d, fill: 'none', stroke: ln.col, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+  });
+  const now = el('g', {}, svg);
+  const nl = el('line', { y1: m.t, y2: h - m.b, stroke: 'rgba(236,232,223,0.5)', 'stroke-width': 1 }, now);
+  const dots = S.lines.map(ln => el('circle', { r: 4, fill: ln.col, stroke: 'var(--panel-solid)', 'stroke-width': 2 }, now));
+  const hover = el('line', { y1: m.t, y2: h - m.b, stroke: 'rgba(236,232,223,0.35)', 'stroke-width': 1, visibility: 'hidden' }, svg);
+  const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; box.appendChild(tip);
+  const hit = el('rect', { x: m.l, y: 0, width: w - m.l - m.r, height: h, fill: 'transparent' }, svg);
+  const showTip = px => {
+    const a = clamp((1 - (px - m.l) / (w - m.l - m.r)) * S.from, 0, S.from);
+    hover.setAttribute('x1', X(a)); hover.setAttribute('x2', X(a)); hover.setAttribute('visibility', 'visible');
+    tip.innerHTML = '';
+    S.lines.forEach((ln, k) => {
+      const v = ln.f(a);
+      if (k === 0) { const b = document.createElement('b'); b.textContent = S.fmt(v); tip.appendChild(b); }
+      const row = document.createElement('div'); row.className = 'row';
+      const i = document.createElement('i'); i.style.background = ln.col;
+      row.append(i, document.createTextNode(k === 0 ? `${ln.name} · ${fmtAge(a).join(' ')}` : `${ln.name}: ${S.fmt(v)}`));
+      tip.appendChild(row);
+    });
+    tip.hidden = false;
+    const tw = tip.offsetWidth;
+    tip.style.left = clamp(X(a) + 10, 0, w - tw) + 'px';
+  };
+  hit.addEventListener('pointermove', e => { const r = svg.getBoundingClientRect(); showTip((e.clientX - r.left) * w / r.width); });
+  hit.addEventListener('pointerleave', () => { tip.hidden = true; hover.setAttribute('visibility', 'hidden'); });
+  chartGeo = { X, Y, S, nl, dots };
+  // table view
+  const rows = [4400, 4000, 3500, 3000, 2500, 2000, 1500, 1000, 500, 0].filter(a => a <= S.from);
+  const tb = document.createElement('table');
+  const hr = tb.insertRow(); ['Yaş', ...S.lines.map(l => l.name)].forEach(t => { const th = document.createElement('th'); th.textContent = t; hr.appendChild(th); });
+  for (const a of rows) { const r = tb.insertRow(); r.insertCell().textContent = fmtAge(a).join(' ').replace(' önce', ''); S.lines.forEach(l => { r.insertCell().textContent = S.fmt(l.f(a)); }); }
+  ui.tableWrap.innerHTML = ''; ui.tableWrap.appendChild(tb);
+  chartMarker(ageAt(T), true);
+}
+function chartMarker(age, force) {
+  if (!chartGeo) return;
+  const { X, Y, S, nl, dots } = chartGeo;
+  const a = Math.min(age, S.from), key = a.toFixed(2);
+  if (!force && cache.chartAge === key) return;
+  cache.chartAge = key;
+  const x = X(a);
+  nl.setAttribute('x1', x); nl.setAttribute('x2', x);
+  S.lines.forEach((ln, k) => { dots[k].setAttribute('cx', x); dots[k].setAttribute('cy', Y(ln.f(a))); dots[k].setAttribute('visibility', age <= S.from ? 'visible' : 'hidden'); });
+}
+
+/* ---------- transport */
 function setPlaying(p) {
   playing = p;
   ui.icoPlay.hidden = p; ui.icoPause.hidden = !p;
   ui.play.setAttribute('aria-label', p ? 'Duraklat' : 'Oynat');
+  if (!p && NARR.ok) speechSynthesis.cancel();
 }
 function seek(t) {
   T = clamp(t, 0, TOTAL);
   impacts.length = 0;
-  ui.toast.hidden = true;
+  ui.event.hidden = true;
+  if (cardTimer > 0) hideCard();
+  if (NARR.ok) speechSynthesis.cancel();
   jumped = true;
 }
-
 ui.play.addEventListener('click', () => {
   if (!playing && T >= TOTAL) seek(0);
   setPlaying(!playing);
 });
-ui.restart.addEventListener('click', () => { seek(0); setPlaying(true); });
+ui.restart.addEventListener('click', () => { seek(0); setPlaying(true); lastScene = -1; showCard(0); });
 const SPEEDS = [0.5, 1, 2, 4];
 function setSpeed(s) {
   speed = s;
@@ -2278,14 +2938,12 @@ function setSpeed(s) {
   ui.speed.setAttribute('aria-label', 'Simülasyon hızı: ' + label);
 }
 ui.speed.addEventListener('click', () => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]));
+ui.narr.addEventListener('click', () => { setNarr(!NARR.on); if (NARR.on && lastBeat >= 0) speak(BEATS[lastBeat].text); });
+ui.snd.addEventListener('click', () => setSound(!AU.on));
+if (!NARR.ok) { ui.narr.disabled = true; ui.narr.title = 'Bu tarayıcı sesli anlatımı desteklemiyor'; }
 for (const b of ui.views) b.addEventListener('click', () => {
   manualView = b.dataset.view;
   updateViewButtons(sceneAt(T));
-});
-ui.more.addEventListener('click', () => {
-  const open = ui.desc.classList.toggle('open');
-  ui.more.textContent = open ? 'Daha az göster' : 'Devamını oku';
-  ui.more.setAttribute('aria-expanded', String(open));
 });
 {
   let drag = false;
@@ -2306,7 +2964,7 @@ ui.more.addEventListener('click', () => {
   });
 }
 document.addEventListener('keydown', e => {
-  if (e.key === ' ' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); ui.play.click(); }
+  if (e.key === ' ' && !(e.target instanceof HTMLButtonElement) && !ui.intro.isConnected) { e.preventDefault(); ui.play.click(); }
 });
 // drag to look around in the 3D views
 {
@@ -2326,6 +2984,15 @@ document.addEventListener('keydown', e => {
   glCv.addEventListener('pointerup', end);
   glCv.addEventListener('pointercancel', end);
 }
+// film grain texture, generated once
+{
+  const c = document.createElement('canvas'); c.width = c.height = 160;
+  const x = c.getContext('2d'), im = x.createImageData(160, 160);
+  for (let k = 0; k < im.data.length; k += 4) { const v = Math.random() * 255; im.data[k] = im.data[k + 1] = im.data[k + 2] = v; im.data[k + 3] = 255; }
+  x.putImageData(im, 0, 0);
+  $('grain').style.backgroundImage = `url(${c.toDataURL()})`;
+}
+for (const ev of EVENTS) if (/Theia, Dünya/.test(ev.text)) ev.boom = 1;
 
 /* ================================================================ main loop */
 let lastNow = performance.now(), glOpacity = -1, glOn = false;
@@ -2334,11 +3001,16 @@ function frame(now) {
   lastNow = now;
   const prevT = T;
   if (playing) {
-    T = Math.min(TOTAL, T + dt * speed);
+    let next = Math.min(TOTAL, T + dt * speed);
+    // documentary pacing: the film waits for the narrator to finish before the next line
+    if (narratorBusy()) { const nb = BEATS[lastBeat + 1]; if (nb && next >= nb.t) next = Math.max(T, nb.t - 1e-3); }
+    T = next;
     if (T >= TOTAL) setPlaying(false);
   }
   clock += dt;
   const age = ageAt(T), i = sceneAt(T), u = sceneU(T, i), key = SCENES[i].key;
+  if (playing && !jumped && i !== lastScene && lastScene >= 0) showCard(i);
+  if (cardTimer > 0) { cardTimer -= dt; if (cardTimer <= 0) hideCard(); }
 
   // planet spin follows the length of the day: a young Earth spun much faster
   const day = age < 4511 ? kf(KF.day, age) : 7;
@@ -2370,19 +3042,21 @@ function frame(now) {
   if (playing && T > prevT) {
     for (const ev of EVENTS) {
       if (prevT < ev.t && ev.t <= T) {
-        showToast(ev);
+        showEvent(ev);
+        if (ev.boom) audioBoom(1);
         if (ev.impact) {
-          spawnImpact(true);
+          spawnImpact(true); audioBoom(0.8);
           if (GL) GL.meteors.push({ t: 0, dur: 1.4, a: 0.35, e: 0.55, big: true });
         }
       }
     }
     if (i >= 2 && shown === '2d') {
       const n = impactRate(age, i, u) * dt * speed;
-      if (Math.random() < n) spawnImpact(false);
+      if (Math.random() < n) { spawnImpact(false); audioBoom(0.15); }
     }
   }
-  if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ui.toast.hidden = true; }
+  if (evTimer > 0) { evTimer -= dt; if (evTimer <= 0) ui.event.hidden = true; }
+  audioUpdate(age, key, shown);
 
   // 2D canvas
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -2393,7 +3067,7 @@ function frame(now) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (shown === '2d') {
     if (i <= 2) {
-      // the disk view zooms onto the proto-Earth during the first third of scene 3
+      // the disk view zooms onto the proto-Earth during the first third of chapter III
       const diskA = i < 2 ? 1 : 1 - sstep(0.18, 0.32, u);
       if (i >= 1 && diskA > 0) nbSync(T);
       if (diskA > 0) drawDiskView(T, diskA * vAlpha);
@@ -2418,9 +3092,20 @@ function frame(now) {
   const on = show3d && vAlpha > 0.5;
   if (on !== glOn) { glOn = on; document.body.classList.toggle('gl-on', on); }
 
-  jumped = false;
   updateUI(age, moonBody);
+  jumped = false;
   requestAnimationFrame(frame);
+}
+
+function begin(withSound) {
+  ui.intro.remove();
+  document.body.classList.remove('intro-on');
+  if (withSound) { setNarr(true); setSound(true); }
+  lastScene = -1;
+  setPlaying(true);
+  showCard(sceneAt(T));
+  jumped = false;
+  lastBeat = -2;
 }
 
 function start(data) {
@@ -2428,20 +3113,29 @@ function start(data) {
   GL = initGL();
   layout();
   placeMarks();
-  if (data && typeof data.T === 'number') seek(data.T);
+  const resumed = data && typeof data.T === 'number';
+  if (resumed) seek(data.T);
   if (data && typeof data.speed === 'number') setSpeed(data.speed);
   if (data && typeof data.view === 'string') manualView = data.view;
-  setPlaying(playing);
   updateViewButtons(sceneAt(T));
+  if (window.innerWidth > 860) drawChart();
+  if (resumed) { ui.intro.remove(); document.body.classList.remove('intro-on'); setPlaying(!!data.playing); }
+  else {
+    setPlaying(false);
+    if (!NARR.ok) { $('startVoice').textContent = 'Ortam sesiyle izle'; ui.introNote.textContent = 'Bu tarayıcı sesli anlatımı desteklemiyor; anlatım altyazı olarak gösterilecek.'; }
+    $('startVoice').addEventListener('click', () => begin(true));
+    $('startQuiet').addEventListener('click', () => begin(false));
+    $('startVoice').focus({ preventScroll: true });
+  }
   let rt = 0;
-  const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { layout(); placeMarks(); }, 120); };
+  const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { layout(); placeMarks(); if (!panelHidden('p-data')) drawChart(); }, 120); };
   window.addEventListener('resize', onResize);
   if (window.ResizeObserver) new ResizeObserver(onResize).observe(stageEl);
   requestAnimationFrame(t => { lastNow = t; frame(t); });
 }
 
 const hot = window.claude && window.claude.hot;
-if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ T, speed, view: manualView }));
+if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ T, speed, view: manualView, playing }));
 if (hot && typeof hot.ready === 'function') hot.ready(start);
 else start((hot && hot.data) || {});
 })();
